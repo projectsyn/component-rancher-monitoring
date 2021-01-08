@@ -1,0 +1,12 @@
+parameters:
+  kapitan:
+    compile:
+      - input_paths:
+          - rancher-monitoring/component/app.jsonnet
+        input_type: jsonnet
+        output_path: apps/
+      - input_paths:
+          - rancher-monitoring/component/main.jsonnet
+        input_type: jsonnet
+        output_path: rancher-monitoring/
+

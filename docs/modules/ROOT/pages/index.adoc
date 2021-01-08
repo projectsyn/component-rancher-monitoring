@@ -1,0 +1,5 @@
+= rancher-monitoring
+
+rancher-monitoring is a Commodore component to manage rancher-monitoring.
+
+See the xref:references/parameters.adoc[parameters] reference for further details.

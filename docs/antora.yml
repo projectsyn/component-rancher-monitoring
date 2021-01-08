@@ -1,0 +1,6 @@
+name: rancher-monitoring
+title: rancher-monitoring
+version: master
+start_page: ROOT:index.adoc
+nav:
+  - modules/ROOT/partials/nav.adoc

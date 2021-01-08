@@ -1,0 +1,3 @@
+parameters:
+  rancher_monitoring:
+    namespace: syn-rancher-monitoring
