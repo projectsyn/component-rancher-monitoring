@@ -36,7 +36,7 @@ local alertmanager = {
   spec+: {
     baseImage: params.images.alertmanager.image,
     tag: params.images.alertmanager.tag,
-    logLevel: "info",
+    logLevel: 'info',
     nodeSelector+: {
       'kubernetes.io/os': 'linux',
     },
@@ -95,7 +95,7 @@ local secret = kube.Secret(name) {
     labels+: labels,
   },
   stringData: {
-    # TODO: consider sanitizing or verifying input config
+    // TODO: consider sanitizing or verifying input config
     'alertmanager.yaml': std.manifestYamlDoc(params.alertmanagerConfig),
   },
 };

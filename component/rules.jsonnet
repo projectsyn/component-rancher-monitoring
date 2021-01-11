@@ -38,18 +38,18 @@ local alterRules = {
 local ruleFilter(group) =
   local internalRuleFilter =
     if group.name == 'kubernetes-apps' then
-      ['KubeHpaMaxedOut', 'KubeHpaReplicasMismatch']
+      [ 'KubeHpaMaxedOut', 'KubeHpaReplicasMismatch' ]
     else if group.name == 'kubernetes-resources' then
-      ['CPUThrottlingHigh']
+      [ 'CPUThrottlingHigh' ]
     else if group.name == 'kubernetes-system-apiserver' then
       // This can be removed once https://github.com/coreos/kube-prometheus/pull/516 got merged
-      ['AggregatedAPIDown']
+      [ 'AggregatedAPIDown' ]
     else
       [];
   local userRuleFilter =
-    [r.name for r in exclude_rules if r.group == group.name];
+    [ r.name for r in exclude_rules if r.group == group.name ];
 
-  # merge user-provided and hard-coded rule names to filter out
+  // merge user-provided and hard-coded rule names to filter out
   std.set(internalRuleFilter + userRuleFilter);
 
 local filterRules = {

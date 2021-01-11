@@ -42,7 +42,7 @@ local prometheus = {
     alerting+: {
       alertmanagers+: [
         {
-          name: "alertmanager-" + params.alertmanagerInstance,
+          name: 'alertmanager-' + params.alertmanagerInstance,
           namespace: namespace,
           port: 'web',
         },
@@ -62,12 +62,12 @@ local prometheus = {
     replicas: 1,
     resources+: {
       requests+: {
-        memory: "2Gi",
-        cpu: "1000m",
+        memory: '2Gi',
+        cpu: '1000m',
       },
       limits+: {
-        memory: "6Gi",
-        cpu: "2000m",
+        memory: '6Gi',
+        cpu: '2000m',
       },
     },
     storage+: {
@@ -78,13 +78,13 @@ local prometheus = {
           ],
           resources+: {
             requests+: {
-              storage+: "10Gi"
+              storage+: '10Gi',
             },
           },
         },
       },
     },
-    retention: "24h",
+    retention: '24h',
     securityContext+: {
       fsGroup: 2000,
       runAsNonRoot: true,
