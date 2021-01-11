@@ -8,8 +8,113 @@ The parent key for all of the following parameters is `rancher_monitoring`.
 type:: string
 default:: `syn-rancher-monitoring`
 
-The namespace in which to deploy this component.
+The namespace in which to deploy the Syn Rancher monitoring stack
 
+== `prometheusInstance`
+
+[horizontal]
+type:: string
+default:: `platform`
+
+The Prometheus instance name to use.
+For some uses this will be prefixed with `prometheus`, for example for the StatefulSet name.
+
+== `prometheus`
+
+[horizontal]
+type:: dict
+default::
++
+[source,yaml]
+----
+storage:
+  volumeClaimTemplate:
+    spec:
+      storageClassName: fast
+      resources:
+        requests:
+          storage: 10Gi
+----
+
+Prometheus customizations.
+See the https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#prometheusspec[`PrometheusSpec` documentation] for all possible configurations.
+The value of this parameter is merged into the `spec` field of the `Prometheus` object managed by the component.
+
+== `alertmanagerInstance`
+
+[horizontal]
+type:: string
+default:: `platform`
+
+The Alertmanager instance name to use.
+For some uses this will be prefixed with `alertmanager`, for example for the StatefulSet name.
+
+== `alertmanager`
+
+[horizontal]
+type:: dict
+default::
++
+[source,yaml]
+----
+replicas: 1
+logLevel: info
+----
+
+Alertmanager customization.
+See the https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#alertmanagerspec[`AlertmanagerSpec` documentation] for all possible configurations.
+The value of this parameter is merged into the `spec` field of the `Alertmanager` object managed by the component.
+
+== `alertmanagerConfig`
+
+[horizontal]
+type:: dict
+default::
++
+[source,yaml]
+----
+receivers:
+  # blackhole receiver for alerts we don't care about
+  - name: devnull
+# If the user doesn't configure a receiver, send everything to
+# devnull. This allows Alertmanager to start even if the user doesn't
+# configure any alert receivers.
+route:
+  receiver: devnull
+----
+
+The value of this parameter is deployed verbatim as the Alertmanager configuration in `alertmanager.yaml`.
+
+See the https://prometheus.io/docs/alerting/latest/configuration/[Alertmanager documentation] for possible configuration options.
+
+The default configuration allows Alertmanager to start even if no alert receivers have been configured for the cluster.
+
+== `federation`
+
+[horizontal]
+type:: dict
+default::
++
+[source,yaml]
+----
+interval: 10s
+scrape_timeout: 10s
+----
+
+Configure the scrape interval and timeout for the Prometheus job which federates metrics from the Rancher Prometheus instance in `cattle-prometheus`.
+
+Users should ensure that the `scrape_timeout` is lower than the `interval`, as there's no validation logic in the component.
+
+== `exclude_rules`
+
+[horizontal]
+type:: list
+default:: `[]`
+
+A list of alert rules which should be completely disabled on the cluster.
+Rules are listed as dicts with keys `group` and `name`.
+The `group` key is matched against the `kube-prometheus` alert rule group name.
+The `name` key is used to filter out alerts with matching name from the given group.
 
 == Example
 
