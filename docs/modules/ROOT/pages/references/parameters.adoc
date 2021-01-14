@@ -10,6 +10,48 @@ default:: `syn-rancher-monitoring`
 
 The namespace in which to deploy the Syn Rancher monitoring stack
 
+== `kube_prometheus_version`
+
+[horizontal]
+type:: dict
+default::
++
+[source,yaml]
+----
+'1.15': 53f18a42769ea1d4bce833962a908f84069ef495
+'1.16': 68692f7aec038090bfba951bdf821dd8f1c08e75
+'1.17': 4e7440f742df31cd6da188f52ddc4e4037b81599
+'1.18': f69ff3d63de17f3f52b955c3b7e0d7aff0372873
+----
+
+Map of kube-prometheus versions which are compatible with different Kubernetes versions.
+
+See the https://github.com/prometheus-operator/kube-prometheus/blob/master/README.md#kubernetes-compatibility-matrix[kube-prometheus Kubernetes compatibility matrix] for updating this map.
+
+[NOTE]
+====
+So far, we've used Git commit hashes in the version map.
+The upstream compatibility matrix provides compatibility branches for Kubernetes 1.16+.
+Those branch names could be used as versions in jsonnet-bundler.
+
+To ensure minimal changes during the open sourcing process, we keep the old commit hash versions in the map for the initial open-source release.
+====
+
+== `jsonnetfile_parameters`
+
+[horizontal]
+type:: dict
+default::
++
+[source,yaml]
+----
+kube_prometheus_version: ${rancher_monitoring:kube_prometheus_version:1.18}
+----
+
+Map of string values to use as external Jsonnet variables when rendering `jsonnetfile.json` from the `jsonnetfile.jsonnet` in the repository.
+
+The intent is that `kube_prometheus_version` is configured to a `kube-prometheus` version (Git tree-ish) which is compatible with the target cluster's Kubernetes version.
+
 == `prometheusInstance`
 
 [horizontal]
