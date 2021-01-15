@@ -7,8 +7,9 @@ parameters:
       '1.16': 68692f7aec038090bfba951bdf821dd8f1c08e75
       '1.17': 4e7440f742df31cd6da188f52ddc4e4037b81599
       '1.18': f69ff3d63de17f3f52b955c3b7e0d7aff0372873
+    cluster_kubernetes_version: '1.18'
     jsonnetfile_parameters:
-      kube_prometheus_version: ${rancher_monitoring:kube_prometheus_version:1.18}
+      kube_prometheus_version: ${rancher_monitoring:kube_prometheus_version:${rancher_monitoring:cluster_kubernetes_version}}
 
     prometheusInstance: platform
     prometheus:

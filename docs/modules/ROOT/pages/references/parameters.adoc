@@ -37,6 +37,24 @@ Those branch names could be used as versions in jsonnet-bundler.
 To ensure minimal changes during the open sourcing process, we keep the old commit hash versions in the map for the initial open-source release.
 ====
 
+== `cluster_kubernetes_version`
+
+[horizontal]
+type:: string
+default:: `1.18`
+
+The target cluster's Kubernetes version.
+Used to look up the `kube-prometheus` version in the `kube_prometheus_version` map.
+
+Having this parameter as a layer of indirection allows setting the target cluster's Kubernetes version without needing `parameters.rancher_monitoring.kube_prometheus_version` to exist.
+
+[NOTE]
+====
+We're currently using this approach as a workaround for the fact that Commodore doesn't support dynamic facts yet.
+Once dynamic facts are implemented, all clusters will have a uniformly named fact which represents the cluster's Kubernetes version.
+That fact can then be used in place of this parameter to select the `kube-prometheus` version in `jsonnetfile_parameters.kube_prometheus_version`.
+====
+
 == `jsonnetfile_parameters`
 
 [horizontal]
