@@ -36,6 +36,9 @@ parameters:
       # configure any alert receivers.
       route:
         receiver: devnull
+        group_wait: 0s
+        group_interval: 5s
+        repeat_interval: 10m
 
     federation:
       interval: '10s'

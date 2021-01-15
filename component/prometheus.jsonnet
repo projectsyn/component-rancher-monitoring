@@ -36,7 +36,7 @@ local prometheus = {
   },
   spec: {
     externalLabels: {
-      customer: inv.parameters.customer.name,
+      tenant: inv.parameters.cluster.tenant,
       cluster: inv.parameters.cluster.name,
     },
     alerting+: {
