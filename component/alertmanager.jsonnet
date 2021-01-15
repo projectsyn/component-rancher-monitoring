@@ -36,11 +36,9 @@ local alertmanager = {
   spec+: {
     baseImage: params.images.alertmanager.image,
     tag: params.images.alertmanager.tag,
-    logLevel: 'info',
     nodeSelector+: {
       'kubernetes.io/os': 'linux',
     },
-    replicas: 1,
     securityContext+: {
       fsGroup: 2000,
       runAsNonRoot: true,

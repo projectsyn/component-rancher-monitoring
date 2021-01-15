@@ -59,32 +59,6 @@ local prometheus = {
     ruleSelector+: {
       matchLabels: matchLabels,
     },
-    replicas: 1,
-    resources+: {
-      requests+: {
-        memory: '2Gi',
-        cpu: '1000m',
-      },
-      limits+: {
-        memory: '6Gi',
-        cpu: '2000m',
-      },
-    },
-    storage+: {
-      volumeClaimTemplate+: {
-        spec+: {
-          accessModes+: [
-            'ReadWriteOnce',
-          ],
-          resources+: {
-            requests+: {
-              storage+: '10Gi',
-            },
-          },
-        },
-      },
-    },
-    retention: '24h',
     securityContext+: {
       fsGroup: 2000,
       runAsNonRoot: true,

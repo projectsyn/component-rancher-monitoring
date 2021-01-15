@@ -13,9 +13,22 @@ parameters:
 
     prometheusInstance: platform
     prometheus:
+      evaluationInterval: 5s
+      scrapeInterval: 10s
+      replicas: 1
+      resources:
+        requests:
+          memory: 2Gi
+          cpu: 1000m
+        limits:
+          memory: 6Gi
+          cpu: 2000m
+      retention: 24h
       storage:
         volumeClaimTemplate:
           spec:
+            accessModes:
+              - ReadWriteOnce
             storageClassName: fast
             resources:
               requests:
