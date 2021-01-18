@@ -105,9 +105,9 @@ local additionalRules = {
 local kp =
   (import 'kube-prometheus/kube-prometheus.libsonnet') +
   (import 'kube-prometheus/kube-prometheus-managed-cluster.libsonnet') +
-  filterRules +
-  alterRules +
   additionalRules +
+  alterRules +
+  filterRules +
   {
     _config+:: {
       namespace: params.namespace,
