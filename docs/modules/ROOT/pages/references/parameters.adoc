@@ -180,5 +180,47 @@ The `name` key is used to filter out alerts with matching name from the given gr
 
 [source,yaml]
 ----
-namespace: example-namespace
+parameters:
+
+  rancher_monitoring:
+    # Dynamically adjust `kube-prometheus` version (Assumes a fact
+    # `eks_version` containing the target cluster version as
+    # `<major>.<minor>` exists.
+    cluster_kubernetes_version: ${facts:eks_version}
+
+    prometheus:
+      replicas: 2
+      requests:
+        memory: 4Gi
+        cpu: '2'
+      limits:
+        cpu: '4'
+      storage:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp2
+
+    alertmanager:
+      replicas: 3
+
+    alertmanagerConfig:
+      receivers:
+        - name: my-super-receiver
+          webhook_configs:
+            - send_resolved: true
+              http_config:
+                bearer_token: thesecretbearertoken
+              url: https://alert-receiver.example.com/alertmanager_webhook
+      route:
+        routes:
+          # Disable KubePodCrashLooping and
+          # KubeDeploymentReplicasMismatch in
+          # all namespaces ending with `-dev`
+          - receiver: devnull
+            continue: false
+            match_re
+              alertname: '^(KubeDeploymentReplicasMismatch|KubePodCrashLooping)$'
+              namespace: '-dev$'
+        # Use receiver configured above as default
+        receiver: my-super-receiver
 ----
