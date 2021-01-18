@@ -1,7 +1,7 @@
 local kap = import 'lib/kapitan.libjsonnet';
 local inv = kap.inventory();
 local params = inv.parameters.rancher_monitoring;
-local exclude_rules = params.exclude_rules;
+local ignoreNames = params.alerts.ignoreNames;
 
 local alterRules = {
   prometheusAlerts+:: {
@@ -46,23 +46,27 @@ local ruleFilter(group) =
       [ 'AggregatedAPIDown' ]
     else
       [];
-  local userRuleFilter =
-    [ r.name for r in exclude_rules if r.group == group.name ];
 
   // merge user-provided and hard-coded rule names to filter out
-  std.set(internalRuleFilter + userRuleFilter);
+  local ignoreSet = std.set(internalRuleFilter + params.alerts.ignoreNames);
+
+  // return group object, with filtered rules list
+  group {
+    rules: std.filter(
+      function(rule)
+        // never filter rules which don't have the `alert` field, those are
+        // probably recording rules.
+        !std.objectHas(rule, 'alert') ||
+        // filter out rules which are in our set of rules to ignore
+        !std.member(ignoreSet, rule.alert),
+      group.rules
+    ),
+  };
 
 local filterRules = {
   prometheusAlerts+:: {
     groups: std.map(
-      function(group)
-        group {
-          rules: std.filter(
-            function(rule)
-              !std.member(ruleFilter(group), rule.alert),
-            group.rules
-          ),
-        },
+      ruleFilter,
       super.groups
     ),
   },

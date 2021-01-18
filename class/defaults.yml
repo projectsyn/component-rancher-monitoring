@@ -57,9 +57,9 @@ parameters:
       interval: '10s'
       scrape_timeout: '10s'
 
-    # specify rules to exclude as list of
-    # {"group": "thegroup", "name": "RuleName"}
-    exclude_rules: []
+    alerts:
+      # List of alertnames to exclude from the final ruleset
+      ignoreNames: []
 
     images:
       prometheus:

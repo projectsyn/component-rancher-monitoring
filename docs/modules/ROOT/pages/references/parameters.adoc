@@ -165,16 +165,15 @@ Configure the scrape interval and timeout for the Prometheus job which federates
 
 Users should ensure that the `scrape_timeout` is lower than the `interval`, as there's no validation logic in the component.
 
-== `exclude_rules`
+== `alerts.ignoreNames`
 
 [horizontal]
 type:: list
 default:: `[]`
 
-A list of alert rules which should be completely disabled on the cluster.
-Rules are listed as dicts with keys `group` and `name`.
-The `group` key is matched against the `kube-prometheus` alert rule group name.
-The `name` key is used to filter out alerts with matching name from the given group.
+A list of alert names which should be completely disabled on the cluster.
+
+Any alerts which match one of the names listed in `ignoreNames` are dropped from the final set of alert rules.
 
 == Example
 
