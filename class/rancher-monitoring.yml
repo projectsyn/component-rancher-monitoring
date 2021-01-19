@@ -9,4 +9,3 @@ parameters:
           - rancher-monitoring/component/main.jsonnet
         input_type: jsonnet
         output_path: rancher-monitoring/
-

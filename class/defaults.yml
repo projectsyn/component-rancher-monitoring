@@ -1,3 +1,70 @@
 parameters:
   rancher_monitoring:
     namespace: syn-rancher-monitoring
+
+    kube_prometheus_version:
+      '1.15': 53f18a42769ea1d4bce833962a908f84069ef495
+      '1.16': 68692f7aec038090bfba951bdf821dd8f1c08e75
+      '1.17': 4e7440f742df31cd6da188f52ddc4e4037b81599
+      '1.18': f69ff3d63de17f3f52b955c3b7e0d7aff0372873
+    cluster_kubernetes_version: '1.18'
+    jsonnetfile_parameters:
+      kube_prometheus_version: ${rancher_monitoring:kube_prometheus_version:${rancher_monitoring:cluster_kubernetes_version}}
+
+    prometheusInstance: platform
+    prometheus:
+      evaluationInterval: 5s
+      scrapeInterval: 10s
+      replicas: 1
+      resources:
+        requests:
+          memory: 2Gi
+          cpu: 1000m
+        limits:
+          memory: 6Gi
+          cpu: 2000m
+      retention: 24h
+      storage:
+        volumeClaimTemplate:
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            storageClassName: fast
+            resources:
+              requests:
+                storage: 10Gi
+
+    alertmanagerInstance: platform
+    alertmanager:
+      replicas: 1
+      logLevel: info
+
+    # alertmanagerConfig is rendered as is into the alertmanager config secret
+    alertmanagerConfig:
+      receivers:
+        # blackhole receiver for alerts we don't care about
+        - name: devnull
+      # If the user doesn't configure a receiver, send everything to
+      # devnull. This allows Alertmanager to start even if the user doesn't
+      # configure any alert receivers.
+      route:
+        receiver: devnull
+        group_wait: 0s
+        group_interval: 5s
+        repeat_interval: 10m
+
+    federation:
+      interval: '10s'
+      scrape_timeout: '10s'
+
+    alerts:
+      # List of alertnames to exclude from the final ruleset
+      ignoreNames: []
+
+    images:
+      prometheus:
+        image: quay.io/prometheus/prometheus
+        tag: 'v2.15.2@sha256:35c52c0c2b76433bbfc44a5a7abc294c2f032ed80250be02b441db5dd91b203a'
+      alertmanager:
+        image: quay.io/prometheus/alertmanager
+        tag: 'v0.18.0'

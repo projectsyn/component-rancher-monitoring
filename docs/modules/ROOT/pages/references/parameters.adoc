@@ -8,12 +8,218 @@ The parent key for all of the following parameters is `rancher_monitoring`.
 type:: string
 default:: `syn-rancher-monitoring`
 
-The namespace in which to deploy this component.
+The namespace in which to deploy the Syn Rancher monitoring stack
 
+== `kube_prometheus_version`
+
+[horizontal]
+type:: dict
+default::
++
+[source,yaml]
+----
+'1.15': 53f18a42769ea1d4bce833962a908f84069ef495
+'1.16': 68692f7aec038090bfba951bdf821dd8f1c08e75
+'1.17': 4e7440f742df31cd6da188f52ddc4e4037b81599
+'1.18': f69ff3d63de17f3f52b955c3b7e0d7aff0372873
+----
+
+Map of kube-prometheus versions which are compatible with different Kubernetes versions.
+
+See the https://github.com/prometheus-operator/kube-prometheus/blob/master/README.md#kubernetes-compatibility-matrix[kube-prometheus Kubernetes compatibility matrix] for updating this map.
+
+[NOTE]
+====
+So far, we've used Git commit hashes in the version map.
+The upstream compatibility matrix provides compatibility branches for Kubernetes 1.16+.
+Those branch names could be used as versions in jsonnet-bundler.
+
+To ensure minimal changes during the open sourcing process, we keep the old commit hash versions in the map for the initial open-source release.
+====
+
+== `cluster_kubernetes_version`
+
+[horizontal]
+type:: string
+default:: `1.18`
+
+The target cluster's Kubernetes version.
+Used to look up the `kube-prometheus` version in the `kube_prometheus_version` map.
+
+Having this parameter as a layer of indirection allows setting the target cluster's Kubernetes version without needing `parameters.rancher_monitoring.kube_prometheus_version` to exist.
+
+[NOTE]
+====
+We're currently using this approach as a workaround for the fact that Commodore doesn't support dynamic facts yet.
+Once dynamic facts are implemented, all clusters will have a uniformly named fact which represents the cluster's Kubernetes version.
+That fact can then be used in place of this parameter to select the `kube-prometheus` version in `jsonnetfile_parameters.kube_prometheus_version`.
+====
+
+== `jsonnetfile_parameters`
+
+[horizontal]
+type:: dict
+default::
++
+[source,yaml]
+----
+kube_prometheus_version: ${rancher_monitoring:kube_prometheus_version:1.18}
+----
+
+Map of string values to use as external Jsonnet variables when rendering `jsonnetfile.json` from the `jsonnetfile.jsonnet` in the repository.
+
+The intent is that `kube_prometheus_version` is configured to a `kube-prometheus` version (Git tree-ish) which is compatible with the target cluster's Kubernetes version.
+
+== `prometheusInstance`
+
+[horizontal]
+type:: string
+default:: `platform`
+
+The Prometheus instance name to use.
+For some uses this will be prefixed with `prometheus`, for example for the StatefulSet name.
+
+== `prometheus`
+
+[horizontal]
+type:: dict
+default::
++
+[source,yaml]
+----
+storage:
+  volumeClaimTemplate:
+    spec:
+      storageClassName: fast
+      resources:
+        requests:
+          storage: 10Gi
+----
+
+Prometheus customizations.
+See the https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#prometheusspec[`PrometheusSpec` documentation] for all possible configurations.
+The value of this parameter is merged into the `spec` field of the `Prometheus` object managed by the component.
+
+== `alertmanagerInstance`
+
+[horizontal]
+type:: string
+default:: `platform`
+
+The Alertmanager instance name to use.
+For some uses this will be prefixed with `alertmanager`, for example for the StatefulSet name.
+
+== `alertmanager`
+
+[horizontal]
+type:: dict
+default::
++
+[source,yaml]
+----
+replicas: 1
+logLevel: info
+----
+
+Alertmanager customization.
+See the https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#alertmanagerspec[`AlertmanagerSpec` documentation] for all possible configurations.
+The value of this parameter is merged into the `spec` field of the `Alertmanager` object managed by the component.
+
+== `alertmanagerConfig`
+
+[horizontal]
+type:: dict
+default::
++
+[source,yaml]
+----
+receivers:
+  # blackhole receiver for alerts we don't care about
+  - name: devnull
+# If the user doesn't configure a receiver, send everything to
+# devnull. This allows Alertmanager to start even if the user doesn't
+# configure any alert receivers.
+route:
+  receiver: devnull
+----
+
+The value of this parameter is deployed verbatim as the Alertmanager configuration in `alertmanager.yaml`.
+
+See the https://prometheus.io/docs/alerting/latest/configuration/[Alertmanager documentation] for possible configuration options.
+
+The default configuration allows Alertmanager to start even if no alert receivers have been configured for the cluster.
+
+== `federation`
+
+[horizontal]
+type:: dict
+default::
++
+[source,yaml]
+----
+interval: 10s
+scrape_timeout: 10s
+----
+
+Configure the scrape interval and timeout for the Prometheus job which federates metrics from the Rancher Prometheus instance in `cattle-prometheus`.
+
+Users should ensure that the `scrape_timeout` is lower than the `interval`, as there's no validation logic in the component.
+
+== `alerts.ignoreNames`
+
+[horizontal]
+type:: list
+default:: `[]`
+
+A list of alert names which should be completely disabled on the cluster.
+
+Any alerts which match one of the names listed in `ignoreNames` are dropped from the final set of alert rules.
 
 == Example
 
 [source,yaml]
 ----
-namespace: example-namespace
+parameters:
+
+  rancher_monitoring:
+    # Dynamically adjust `kube-prometheus` version (Assumes a fact
+    # `eks_version` containing the target cluster version as
+    # `<major>.<minor>` exists.
+    cluster_kubernetes_version: ${facts:eks_version}
+
+    prometheus:
+      replicas: 2
+      requests:
+        memory: 4Gi
+        cpu: '2'
+      limits:
+        cpu: '4'
+      storage:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp2
+
+    alertmanager:
+      replicas: 3
+
+    alertmanagerConfig:
+      receivers:
+        - name: my-super-receiver
+          webhook_configs:
+            - send_resolved: true
+              http_config:
+                bearer_token: thesecretbearertoken
+              url: https://alert-receiver.example.com/alertmanager_webhook
+      route:
+        routes:
+          # Disable KubePodCrashLooping and
+          # KubeDeploymentReplicasMismatch in
+          # all namespaces ending with `-dev`
+          - receiver: devnull
+            continue: false
+            match_re
+              alertname: '^(KubeDeploymentReplicasMismatch|KubePodCrashLooping)$'
+              namespace: '-dev$'
+        # Use receiver configured above as default
+        receiver: my-super-receiver
 ----
