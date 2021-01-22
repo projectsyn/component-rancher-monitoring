@@ -54,8 +54,10 @@ local prometheus = {
       'kubernetes.io/os': 'linux',
     },
     podMonitorNamespaceSelector+: nsSelector,
+    podMonitorSelector+: {},
     ruleNamespaceSelector+: nsSelector,
     serviceMonitorNamespaceSelector+: nsSelector,
+    serviceMonitorSelector+: {},
     ruleSelector+: {
       matchLabels: matchLabels,
     },
