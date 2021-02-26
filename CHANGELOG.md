@@ -20,9 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Update kube-prometheus version locks to include recent dependency fixes ([#4]).
+- Update kube-prometheus repository location ([#7])
 
 [Unreleased]: https://github.com/projectsyn/component-rancher-monitoring/compare/084a263baf909b627d2861790806ac8f7de3f580...HEAD
 [#1]: https://github.com/projectsyn/component-rancher-monitoring/pull/1
 [#4]: https://github.com/projectsyn/component-rancher-monitoring/pull/4
 [#6]: https://github.com/projectsyn/component-rancher-monitoring/pull/6
+[#7]: https://github.com/projectsyn/component-rancher-monitoring/pull/7
 [#8]: https://github.com/projectsyn/component-rancher-monitoring/pull/8
