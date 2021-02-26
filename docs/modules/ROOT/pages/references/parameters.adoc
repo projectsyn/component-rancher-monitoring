@@ -177,6 +177,23 @@ A list of alert names which should be completely disabled on the cluster.
 
 Any alerts which match one of the names listed in `ignoreNames` are dropped from the final set of alert rules.
 
+== `alerts.customAnnotations`
+
+[horizontal]
+type:: dict
+default:: `{}`
+
+Maps alert names to sets of custom annotations. Allows configuring custom annotations for individual alerts
+
+Example:
+
+[source,yaml]
+----
+customAnnotations:
+  Watchdog:
+    runbook_url: https://www.google.com/?q=Watchdog
+----
+
 == Example
 
 [source,yaml]
