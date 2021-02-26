@@ -3,10 +3,12 @@ parameters:
     namespace: syn-rancher-monitoring
 
     kube_prometheus_version:
-      '1.15': 53f18a42769ea1d4bce833962a908f84069ef495
-      '1.16': 1b838d59a58522e969194daaeaac0c1709192771
-      '1.17': 1b838d59a58522e969194daaeaac0c1709192771
-      '1.18': b2b90f25b853719bebd964a6680f156e436a7efb
+      '1.15': a95e9dada46ec6d8e11bd463b45b6e59525dc64e # release-0.3
+      '1.16': eeb5ed7b62e45c540756eea76626d76a6ad725fc # release-0.4
+      '1.17': eeb5ed7b62e45c540756eea76626d76a6ad725fc # release-0.4
+      '1.18': 95ba62c1074c9e11bdb93423742552d5c816dfd1 # release-0.6
+      '1.19': c1130442d68bf4bfbd1544711b67c98a28f2a327 # release-0.7
+      '1.20': c1130442d68bf4bfbd1544711b67c98a28f2a327 # release-0.7
     cluster_kubernetes_version: '1.18'
     jsonnetfile_parameters:
       kube_prometheus_version: ${rancher_monitoring:kube_prometheus_version:${rancher_monitoring:cluster_kubernetes_version}}
