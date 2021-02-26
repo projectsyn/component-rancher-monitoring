@@ -2,6 +2,10 @@ local kap = import 'lib/kapitan.libjsonnet';
 local inv = kap.inventory();
 local params = inv.parameters.rancher_monitoring;
 local ignoreNames = params.alerts.ignoreNames;
+local customAnnotations = params.alerts.customAnnotations;
+local defaultAnnotations = {
+  syn_component: inv.parameters._instance,
+};
 
 local alterRules = {
   prometheusAlerts+:: {
@@ -30,6 +34,31 @@ local alterRules = {
           }
         else
           group,
+      super.groups
+    ),
+  },
+};
+
+local annotateRules = {
+  prometheusAlerts+:: {
+    groups: std.map(
+      function(group)
+        group {
+          rules: std.map(
+            function(rule)
+              local annotations =
+                defaultAnnotations +
+                if std.objectHas(rule, 'alert') && std.objectHas(customAnnotations, rule.alert) then
+                  customAnnotations[rule.alert]
+                else
+                  {};
+
+              rule {
+                annotations+: annotations,
+              },
+            group.rules
+          ),
+        },
       super.groups
     ),
   },
@@ -111,6 +140,7 @@ local kp =
   (import 'kube-prometheus/kube-prometheus-managed-cluster.libsonnet') +
   additionalRules +
   alterRules +
+  annotateRules +
   filterRules +
   {
     _config+:: {
