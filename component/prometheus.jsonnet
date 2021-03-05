@@ -48,8 +48,8 @@ local prometheus = {
         },
       ],
     },
-    baseImage: params.images.prometheus.image,
-    tag: params.images.prometheus.tag,
+    image: params.images.prometheus.image + ':' + params.images.prometheus.tag,
+    version: std.split(params.images.prometheus.tag, '@')[0],
     nodeSelector+: {
       'kubernetes.io/os': 'linux',
     },
