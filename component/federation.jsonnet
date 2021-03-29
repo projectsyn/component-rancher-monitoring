@@ -36,7 +36,7 @@ local monitor = {
         path: '/federate',
         params: {
           'match[]': [
-            '{job!="ingress-nginx-controller-metrics"}',
+            '{job!="ingress-nginx-controller-metrics",created_by_kind!="nginx-ingress-controller"}',
           ],
         },
         honorLabels: true,
