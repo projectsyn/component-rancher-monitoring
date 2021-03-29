@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Upgrade kube-prometheus ([#6])
 - Upgrade Prometheus to v2.25.0 ([#11])
-- Federation: Exclude ingress-nginx metrics ([#12])
+- Federation: Exclude ingress-nginx metrics ([#12]) ([#15])
 
 ### Fixed
 
@@ -35,3 +35,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#10]: https://github.com/projectsyn/component-rancher-monitoring/pull/10
 [#11]: https://github.com/projectsyn/component-rancher-monitoring/pull/11
 [#12]: https://github.com/projectsyn/component-rancher-monitoring/pull/12
+[#15]: https://github.com/projectsyn/component-rancher-monitoring/pull/15
