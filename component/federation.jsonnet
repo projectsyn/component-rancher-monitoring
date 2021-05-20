@@ -36,10 +36,39 @@ local scrape_config = kube.Secret('additional-scrape-configs') {
             ],
           },
         ],
-        relabel_configs: [
+        metric_relabel_configs: [
+          // drop unneeded `prometheus_replica` label from federated metrics
           {
-            regex: 'pod_name',
             action: 'labeldrop',
+            regex: 'prometheus_replica',
+          },
+          // Fix broken namespace labels on "expose-kubelets-metrics" metrics
+          // federated from Rancher Prometheus.
+          // The following actions replace the value of the namespace label
+          // with the value of the exported_namespace label if both exist for
+          // a metric.
+          {
+            action: 'replace',
+            source_labels: [ 'namespace' ],
+            target_label: '__tmp_namespace',
+          },
+          {
+            action: 'labeldrop',
+            regex: 'namespace',
+          },
+          {
+            action: 'replace',
+            regex: 'cattle-prometheus;(.*)',
+            replacement: '$1',
+            source_labels: [
+              '__tmp_namespace',
+              'exported_namespace',
+            ],
+            target_label: 'namespace',
+          },
+          {
+            action: 'labeldrop',
+            regex: '(__tmp|exported)_namespace',
           },
         ],
       },
