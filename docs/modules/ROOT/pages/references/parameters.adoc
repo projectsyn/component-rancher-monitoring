@@ -167,6 +167,19 @@ Configure the scrape interval and timeout for the Prometheus job which federates
 
 Users should ensure that the `scrape_timeout` is lower than the `interval`, as there's no validation logic in the component.
 
+
+== `alerts.namespaceSelector`
+
+[horizontal]
+type:: string
+default:: `namespace=~"default|((kube|syn|cattle).*)"`
+
+Namespace selector which is injected into alert rules by `kube-prometheus` (via `kubernetes-mixin`).
+
+By default, alerts for namespaced objects are only configured for namespaces which are part of Kubernetes, Rancher, or Project Syn.
+
+To fully remove the selector, set this parameter to `null`.
+
 == `alerts.ignoreNames`
 
 [horizontal]

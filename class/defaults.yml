@@ -60,6 +60,7 @@ parameters:
       scrape_timeout: '10s'
 
     alerts:
+      namespaceSelector: namespace=~"default|((kube|syn|cattle).*)"
       # List of alertnames to exclude from the final ruleset
       ignoreNames: []
       customAnnotations: {}
