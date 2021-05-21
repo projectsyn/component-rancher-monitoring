@@ -10,38 +10,69 @@ local federation_interval = params.federation.interval;
 // comparison/sanity checks without parsing them, which would be overkill.
 local federation_scrape_timeout = params.federation.scrape_timeout;
 
-local monitor = {
-  apiVersion: 'monitoring.coreos.com/v1',
-  kind: 'ServiceMonitor',
-  metadata: {
-    name: 'rancher-federation',
-    namespace: namespace,
+local scrape_config = kube.Secret('additional-scrape-configs') {
+  metadata+: {
+    namespace: params.namespace,
   },
-  spec: {
-    namespaceSelector: {
-      matchNames: [
-        'cattle-prometheus',
-      ],
-    },
-    selector: {
-      matchLabels: {
-        app: 'prometheus',
-      },
-    },
-    endpoints: [
+  stringData: {
+    'prometheus-additional.yaml': std.manifestYamlDoc([
       {
-        port: 'nginx-http',
-        interval: federation_interval,
-        scrapeTimeout: federation_scrape_timeout,
-        path: '/federate',
+        job_name: 'access-prometheus',
+        honor_labels: true,
+        honor_timestamps: true,
         params: {
           'match[]': [
             '{job!="ingress-nginx-controller-metrics",created_by_kind!="nginx-ingress-controller"}',
           ],
         },
-        honorLabels: true,
+        scrape_interval: federation_interval,
+        scrape_timeout: federation_scrape_timeout,
+        metrics_path: '/federate',
+        scheme: 'http',
+        static_configs: [
+          {
+            targets: [
+              'access-prometheus.cattle-prometheus.svc.cluster.local:80',
+            ],
+          },
+        ],
+        metric_relabel_configs: [
+          // drop unneeded `prometheus_replica` label from federated metrics
+          {
+            action: 'labeldrop',
+            regex: 'prometheus_replica',
+          },
+          // Fix broken namespace labels on "expose-kubelets-metrics" metrics
+          // federated from Rancher Prometheus.
+          // The following actions replace the value of the namespace label
+          // with the value of the exported_namespace label if both exist for
+          // a metric.
+          {
+            action: 'replace',
+            source_labels: [ 'namespace' ],
+            target_label: '__tmp_namespace',
+          },
+          {
+            action: 'labeldrop',
+            regex: 'namespace',
+          },
+          {
+            action: 'replace',
+            regex: 'cattle-prometheus;(.*)',
+            replacement: '$1',
+            source_labels: [
+              '__tmp_namespace',
+              'exported_namespace',
+            ],
+            target_label: 'namespace',
+          },
+          {
+            action: 'labeldrop',
+            regex: '(__tmp|exported)_namespace',
+          },
+        ],
       },
-    ],
+    ]),
   },
 };
 
@@ -76,6 +107,6 @@ local rule = {
 
 
 [
-  monitor,
+  scrape_config,
   rule,
 ]

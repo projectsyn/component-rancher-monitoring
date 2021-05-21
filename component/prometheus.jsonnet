@@ -67,6 +67,10 @@ local prometheus = {
       runAsUser: 1000,
     },
     serviceAccountName: name,
+    additionalScrapeConfigs: {
+      name: 'additional-scrape-configs',
+      key: 'prometheus-additional.yaml',
+    },
   } + com.makeMergeable(params.prometheus),
 };
 
