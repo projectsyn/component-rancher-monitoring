@@ -165,7 +165,7 @@ local kp =
       kubeStateMetricsSelector: 'job="expose-kubernetes-metrics"',
       kubeletSelector: 'job="expose-kubelets-metrics"',
       nodeExporterSelector: 'job="expose-node-metrics"',
-      prefixedNamespaceSelector: 'namespace=~"default|((kube|syn|cattle).*)",',
+      namespaceSelector: params.alerts.namespaceSelector,
     },
   };
 
