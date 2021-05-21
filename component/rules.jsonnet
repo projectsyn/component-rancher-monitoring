@@ -7,6 +7,22 @@ local defaultAnnotations = {
   syn_component: inv.parameters._instance,
 };
 
+
+local patch_node_filesystem_rules(rule) =
+  local node_fs_rules = std.set([
+    'NodeFilesystemSpaceFillingUp',
+    'NodeFilesystemAlmostOutOfSpace',
+    'NodeFilesystemFilesFillingUp',
+    'NodeFilesystemAlmostOutOfFiles',
+  ]);
+  rule {
+    expr:
+      if std.setMember(rule.alert, node_fs_rules) then
+        'bottomk by (device, host_ip) (1, %s)' % rule.expr
+      else
+        rule.expr,
+  };
+
 local alterRules = {
   prometheusAlerts+:: {
     groups: std.map(
@@ -32,8 +48,14 @@ local alterRules = {
               group.rules
             ),
           }
-        else
-          group,
+        else (
+          if group.name == 'node-exporter' then
+            group {
+              rules: std.map(patch_node_filesystem_rules, group.rules),
+            }
+          else
+            group
+        ),
       super.groups
     ),
   },
