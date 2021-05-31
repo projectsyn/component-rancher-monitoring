@@ -34,8 +34,7 @@ local alertmanager = {
     labels: labels,
   },
   spec+: {
-    baseImage: params.images.alertmanager.image,
-    tag: params.images.alertmanager.tag,
+    image: params.images.alertmanager.image + ':' + params.images.alertmanager.tag,
     nodeSelector+: {
       'kubernetes.io/os': 'linux',
     },
