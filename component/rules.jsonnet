@@ -8,8 +8,8 @@ local defaultAnnotations = {
 };
 
 
-local patch_node_filesystem_rules(rule) =
-  local node_fs_rules = std.set([
+local patchNodeFilesystemRules(rule) =
+  local nodeFsRules = std.set([
     'NodeFilesystemSpaceFillingUp',
     'NodeFilesystemAlmostOutOfSpace',
     'NodeFilesystemFilesFillingUp',
@@ -17,76 +17,76 @@ local patch_node_filesystem_rules(rule) =
   ]);
   rule {
     expr:
-      if std.setMember(rule.alert, node_fs_rules) then
+      if std.setMember(rule.alert, nodeFsRules) then
         'bottomk by (device, host_ip) (1, %s)' % rule.expr
       else
         rule.expr,
   };
 
+local patchGeneralRules(rule) =
+  if rule.alert == 'Watchdog' then
+    rule {
+      labels: {
+        heartbeat: '60s',
+        severity: 'critical',
+      },
+      annotations+: {
+        description: 'This is a dead mans switch meant to ensure that the entire alerting pipeline is functional.',
+        summary: 'Alerting dead mans switch',
+      },
+    }
+  else
+    rule;
+
+local ruleAlter(group) =
+  if group.name == 'general.rules' then
+    group {
+      rules: std.map(patchGeneralRules, group.rules),
+    }
+  else if group.name == 'node-exporter' then
+    group {
+      rules: std.map(patchNodeFilesystemRules, group.rules),
+    }
+  else
+    group;
+
+
 local alterRules = {
   prometheusAlerts+:: {
     groups: std.map(
-      function(group)
-        if group.name == 'general.rules' then
-          group {
-            rules: std.map(
-              function(rule)
-                // Attach Signalilo/Icinga heartbeat labeling to Watchdog rule.
-                if rule.alert == 'Watchdog' then
-                  rule {
-                    labels: {
-                      heartbeat: '60s',
-                      severity: 'critical',
-                    },
-                    annotations+: {
-                      description: 'This is a dead mans switch meant to ensure that the entire alerting pipeline is functional.',
-                      summary: 'Alerting dead mans switch',
-                    },
-                  }
-                else
-                  rule,
-              group.rules
-            ),
-          }
-        else (
-          if group.name == 'node-exporter' then
-            group {
-              rules: std.map(patch_node_filesystem_rules, group.rules),
-            }
-          else
-            group
-        ),
+      ruleAlter,
       super.groups
     ),
   },
 };
 
+local annotateAlertRules(rule) =
+  // Only add custom annotations to alert rules, since recording
+  // rules cannot have annotations.
+  // We identify alert rules by the presence of the `alert` field.
+  if std.objectHas(rule, 'alert') then
+    local annotations =
+      defaultAnnotations +
+      if std.objectHas(customAnnotations, rule.alert) then
+        customAnnotations[rule.alert]
+      else
+        {};
+
+    rule {
+      annotations+: annotations,
+    }
+  else
+    rule;
+
+local ruleAnnotate(group) =
+  group {
+    rules: std.map(annotateAlertRules, group.rules),
+  };
+
 local annotateRules = {
   prometheusAlerts+:: {
     groups: std.map(
-      function(group)
-        group {
-          rules: std.map(
-            function(rule)
-              // Only add custom annotations to alert rules, since recording
-              // rules cannot have annotations.
-              // We identify alert rules by the presence of the `alert` field.
-              if std.objectHas(rule, 'alert') then
-                local annotations =
-                  defaultAnnotations +
-                  if std.objectHas(customAnnotations, rule.alert) then
-                    customAnnotations[rule.alert]
-                  else
-                    {};
-
-                rule {
-                  annotations+: annotations,
-                }
-              else
-                rule,
-            group.rules
-          ),
-        },
+      ruleAnnotate,
       super.groups
     ),
   },
