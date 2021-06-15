@@ -23,6 +23,32 @@ local patchNodeFilesystemRules(rule) =
         rule.expr,
   };
 
+local patchPersistentVolumeRules(rule) =
+  local pvRules = std.set([
+    'KubePersistentVolumeUsageCritical',
+    'KubePersistentVolumeFullInFourDays',
+    'KubePersistentVolumeFillingUp',
+  ]);
+  rule {
+    expr:
+      if std.setMember(rule.alert, pvRules) then
+        // This will first deduplicate the persistent volume utilization by taking the minimum grouped by pvc-name and namespace
+        // (Note: We explicitly use `min` and not `bottomk`. `bottomk` will produce duplicates if e.g. a RXO pod is recreated)
+        // The deduplicated pvc utilization is then matched with `kube_persistentvolumeclaim_info' which is always one. We
+        // do this by multiplying the two values.
+        // `*on(persistentvolumeclaim, namespace)` will mutliply utilization and pvc_info that match on pvc-name and namespace
+        // `group_left(storageclass)` will add the storageclass label of the pvc_info to the resulting metric
+        // `label_replace((), "namespace", "$1", "exported_namespace", "(.+)")` renames the `exported_namespace` lable to
+        // `namesapace so that we are able to match the two metrics.
+        (
+          'label_replace(min by (persistentvolumeclaim, exported_namespace) (%s), "namespace", "$1", "exported_namespace", "(.+)") '
+          + '*on(persistentvolumeclaim, namespace) group_left(storageclass) kube_persistentvolumeclaim_info'
+        ) % rule.expr
+      else
+        rule.expr,
+  };
+
+
 local patchGeneralRules(rule) =
   if rule.alert == 'Watchdog' then
     rule {
@@ -46,6 +72,10 @@ local ruleAlter(group) =
   else if group.name == 'node-exporter' then
     group {
       rules: std.map(patchNodeFilesystemRules, group.rules),
+    }
+  else if group.name == 'kubernetes-storage' then
+    group {
+      rules: std.map(patchPersistentVolumeRules, group.rules),
     }
   else
     group;
