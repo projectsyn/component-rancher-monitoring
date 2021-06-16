@@ -32,18 +32,19 @@ local patchPersistentVolumeRules(rule) =
   rule {
     expr:
       if std.setMember(rule.alert, pvRules) then
-        // This will first deduplicate the persistent volume utilization by taking the minimum grouped by pvc-name and namespace
+        // This will first deduplicate the available space per persistent volume  by taking the minimum grouped by pvc-name and namespace
         // (Note: We explicitly use `min` and not `bottomk`. `bottomk` will produce duplicates if e.g. a RXO pod is recreated)
-        // The deduplicated pvc utilization is then matched with `kube_persistentvolumeclaim_info' which is always one. We
+        // The deduplicated metric is then matched with `kube_persistentvolumeclaim_info' which is always one. We
         // do this by multiplying the two values.
-        // `*on(persistentvolumeclaim, namespace)` will mutliply utilization and pvc_info that match on pvc-name and namespace
+        // `*on(persistentvolumeclaim, namespace)` will mutliply the metrics and pvc_info that match on pvc-name and namespace
         // `group_left(storageclass)` will add the storageclass label of the pvc_info to the resulting metric
         // `label_replace((), "namespace", "$1", "exported_namespace", "(.+)")` renames the `exported_namespace` lable to
-        // `namesapace so that we are able to match the two metrics.
+        // `namespace` so that we are able to match the two metrics.
+        // Finally it will filter out shared storage classes if they are configured
         (
-          'label_replace(min by (persistentvolumeclaim, exported_namespace) (%s), "namespace", "$1", "exported_namespace", "(.+)") '
-          + '*on(persistentvolumeclaim, namespace) group_left(storageclass) kube_persistentvolumeclaim_info'
-        ) % rule.expr
+          'label_replace(min by (persistentvolumeclaim, exported_namespace) (%s), "namespace", "$1", "exported_namespace", "(.+)")'
+          + '*on(persistentvolumeclaim, namespace) group_left(storageclass) kube_persistentvolumeclaim_info{storageclass!~"%s"}'
+        ) % [ rule.expr, params.alerts.sharedStorageClass ]
       else
         rule.expr,
   };
@@ -185,6 +186,69 @@ local additionalRules = {
             },
             annotations: {
               message: '{{$labels.node}}: Memory usage more than 97% (current value is: {{ $value | humanizePercentage }})%',
+            },
+          },
+        ],
+      },
+      {
+        name: 'kubernetes-storage-class',
+        rules: [
+          {
+            alert: 'KubeStorageClassFillingUp',
+            // This will first calculate the persentage of available space for each PV mount and filter for all
+            // that have less then 3% of available storage.
+            // We then match the persistent volume usage with `kube_persistentvolumeclaim_info' which is always one. We
+            // do this by multiplying the two values.
+            // `*on(persistentvolumeclaim, namespace)` will mutliply the metrics and pvc_info that match on pvc-name and namespace
+            // `group_left(storageclass)` will add the storageclass label of the pvc_info to the resulting metric
+            // `label_replace((), "namespace", "$1", "exported_namespace", "(.+)")` renames the `exported_namespace` lable to
+            // `namespace` so that we are able to match the two metrics.
+            // It will filter only shared storage classes and take the minimum (They should all have the same available space)
+            expr: (
+              'min by (storageclass)'
+              + '(label_replace(kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes < 0.03, "namespace", "$1", "exported_namespace", "(.+)")'
+              + '*on(persistentvolumeclaim, namespace) group_left(storageclass) kube_persistentvolumeclaim_info{storageclass="%s"})'
+            ) % params.alerts.sharedStorageClass,
+            'for': '1m',
+            labels: {
+              severity: 'critical',
+            },
+            annotations: {
+              message: 'The storage classe {{ $labels.storageclass }} is only {{ $value | humanizePercentage }} free.',
+              summary: 'StorageClass is filling up.',
+            },
+          },
+          {
+            alert: 'KubeStorageClassFillingUp',
+            // This will first calculate the persentage of available space for each PV mount and filter for all
+            // that have less then 15% of available storage. It will then predict the available space in four days
+            // and filter for all metrics that are expected to run out of space.
+            // We then match the persistent volume usage with `kube_persistentvolumeclaim_info' which is always one. We
+            // do this by multiplying the two values.
+            // `*on(persistentvolumeclaim, namespace)` will mutliply the metrics and pvc_info that match on pvc-name and namespace
+            // `group_left(storageclass)` will add the storageclass label of the pvc_info to the resulting metric
+            // `label_replace((), "namespace", "$1", "exported_namespace", "(.+)")` renames the `exported_namespace` lable to
+            // `namespace` so that we are able to match the two metrics.
+            // It will filter only shared storage classes and take the minimum (They should all have the same available space)
+            expr: (
+              'min by (storageclass)'
+              + '(label_replace('
+              + '(kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes < 0.15'
+              + 'and'
+              + 'predict_linear(kubelet_volume_stats_available_bytes[6h], 4 * 24 * 3600) < 0)'
+              + ', "namespace", "$1", "exported_namespace", "(.+)")'
+              + '*on(persistentvolumeclaim, namespace) group_left(storageclass) kube_persistentvolumeclaim_info{storageclass="%s"})'
+            ) % params.alerts.sharedStorageClass,
+            'for': '1h',
+            labels: {
+              severity: 'warning',
+            },
+            annotations: {
+              message: (
+                'Based on recent sampling, the storage classe {{ $labels.storageclass }} is expected to fill up'
+                + 'within four days. Currently {{ $value | humanizePercentage }} is available.'
+              ),
+              summary: 'StorageClass is filling up.',
             },
           },
         ],
