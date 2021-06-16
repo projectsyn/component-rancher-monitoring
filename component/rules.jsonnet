@@ -38,7 +38,7 @@ local patchPersistentVolumeRules(rule) =
         // do this by multiplying the two values.
         // `*on(persistentvolumeclaim, namespace)` will mutliply the metrics and pvc_info that match on pvc-name and namespace
         // `group_left(storageclass)` will add the storageclass label of the pvc_info to the resulting metric
-        // `label_replace((), "namespace", "$1", "exported_namespace", "(.+)")` renames the `exported_namespace` lable to
+        // `label_replace((), "namespace", "$1", "exported_namespace", "(.+)")` renames the `exported_namespace` label to
         // `namespace` so that we are able to match the two metrics.
         // Finally it will filter out shared storage classes if they are configured
         (
@@ -201,7 +201,7 @@ local additionalRules = {
             // do this by multiplying the two values.
             // `*on(persistentvolumeclaim, namespace)` will mutliply the metrics and pvc_info that match on pvc-name and namespace
             // `group_left(storageclass)` will add the storageclass label of the pvc_info to the resulting metric
-            // `label_replace((), "namespace", "$1", "exported_namespace", "(.+)")` renames the `exported_namespace` lable to
+            // `label_replace((), "namespace", "$1", "exported_namespace", "(.+)")` renames the `exported_namespace` label to
             // `namespace` so that we are able to match the two metrics.
             // It will filter only shared storage classes and take the minimum (They should all have the same available space)
             expr: (
@@ -214,7 +214,7 @@ local additionalRules = {
               severity: 'critical',
             },
             annotations: {
-              message: 'The storage classe {{ $labels.storageclass }} is only {{ $value | humanizePercentage }} free.',
+              message: 'The storage class {{ $labels.storageclass }} is only {{ $value | humanizePercentage }} free.',
               summary: 'StorageClass is filling up.',
             },
           },
@@ -227,7 +227,7 @@ local additionalRules = {
             // do this by multiplying the two values.
             // `*on(persistentvolumeclaim, namespace)` will mutliply the metrics and pvc_info that match on pvc-name and namespace
             // `group_left(storageclass)` will add the storageclass label of the pvc_info to the resulting metric
-            // `label_replace((), "namespace", "$1", "exported_namespace", "(.+)")` renames the `exported_namespace` lable to
+            // `label_replace((), "namespace", "$1", "exported_namespace", "(.+)")` renames the `exported_namespace` label to
             // `namespace` so that we are able to match the two metrics.
             // It will filter only shared storage classes and take the minimum (They should all have the same available space)
             expr: (
@@ -245,7 +245,7 @@ local additionalRules = {
             },
             annotations: {
               message: (
-                'Based on recent sampling, the storage classe {{ $labels.storageclass }} is expected to fill up'
+                'Based on recent sampling, the storage class {{ $labels.storageclass }} is expected to fill up'
                 + 'within four days. Currently {{ $value | humanizePercentage }} is available.'
               ),
               summary: 'StorageClass is filling up.',
