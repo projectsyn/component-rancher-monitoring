@@ -16,9 +16,7 @@ import (
 
 var (
 	testPath = "../../compiled/rancher-monitoring/rancher-monitoring"
-
 )
-
 
 func validate(t *testing.T, path string) {
 	files, err := ioutil.ReadDir(path)
@@ -33,12 +31,12 @@ func validate(t *testing.T, path string) {
 
 			conf := kubeval.NewDefaultConfig()
 			res, err := kubeval.Validate(data, conf)
-      if err != nil && strings.Contains(err.Error(), "404 Not Found"){
-        // We do not have the api specification for the respecive resource we
-        // skip for now
-        // TODO(glrf) maybe we could load the CRD specification
-        continue
-      }
+			if err != nil && strings.Contains(err.Error(), "404 Not Found") {
+				// We do not have the api specification for the respecive resource we
+				// skip for now
+				// TODO(glrf) maybe we could load the CRD specification
+				continue
+			}
 			require.NoError(t, err)
 			for _, r := range res {
 				if len(r.Errors) > 0 {
@@ -54,7 +52,6 @@ func validate(t *testing.T, path string) {
 func Test_Validate(t *testing.T) {
 	validate(t, testPath)
 }
-
 
 func Test_Namespace(t *testing.T) {
 	ns := corev1.Namespace{}
