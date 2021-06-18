@@ -207,6 +207,27 @@ customAnnotations:
     runbook_url: https://www.google.com/?q=Watchdog
 ----
 
+== `alerts.sharedStorageClass`
+
+[horizontal]
+type:: string
+default:: ``
+
+A regular expression that matches the shared storage classes in this cluster.
+A shared storage class is a storage class for which PVs share the same underlying volume, which causes them to fill up at the same rate.
+The component configures the alert rules to ensure that only a single alert is produced for storage classes matching this regex.
+
+Users must ensure that the regex only matches storage classes which share a single backing volume.
+Otherwise volume utilization alerts will be lost.
+
+Example:
+
+[source,yaml]
+----
+sharedStorageClass: "bulk|foo.*"
+----
+
+
 == Example
 
 [source,yaml]

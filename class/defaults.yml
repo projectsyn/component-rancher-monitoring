@@ -64,6 +64,9 @@ parameters:
       # List of alertnames to exclude from the final ruleset
       ignoreNames: []
       customAnnotations: {}
+      # Storageclasses that share the same volume for each PV and will only
+      # be alerted for once when filling up.
+      sharedStorageClass: ""
 
     images:
       prometheus:

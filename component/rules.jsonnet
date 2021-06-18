@@ -8,8 +8,8 @@ local defaultAnnotations = {
 };
 
 
-local patch_node_filesystem_rules(rule) =
-  local node_fs_rules = std.set([
+local patchNodeFilesystemRules(rule) =
+  local nodeFsRules = std.set([
     'NodeFilesystemSpaceFillingUp',
     'NodeFilesystemAlmostOutOfSpace',
     'NodeFilesystemFilesFillingUp',
@@ -17,76 +17,106 @@ local patch_node_filesystem_rules(rule) =
   ]);
   rule {
     expr:
-      if std.setMember(rule.alert, node_fs_rules) then
+      if std.setMember(rule.alert, nodeFsRules) then
         'bottomk by (device, host_ip) (1, %s)' % rule.expr
       else
         rule.expr,
   };
 
+local patchPersistentVolumeRules(rule) =
+  local pvRules = std.set([
+    'KubePersistentVolumeUsageCritical',
+    'KubePersistentVolumeFullInFourDays',
+    'KubePersistentVolumeFillingUp',
+  ]);
+  rule {
+    expr:
+      if std.setMember(rule.alert, pvRules) then
+        // This will first deduplicate the available space per persistent volume  by taking the minimum grouped by pvc-name and namespace
+        // (Note: We explicitly use `min` and not `bottomk`. `bottomk` will produce duplicates if e.g. a RXO pod is recreated)
+        // The deduplicated metric is then matched with `kube_persistentvolumeclaim_info' which is always one. We
+        // do this by multiplying the two values.
+        // `*on(persistentvolumeclaim, namespace)` will mutliply the metrics and pvc_info that match on pvc-name and namespace
+        // `group_left(storageclass)` will add the storageclass label of the pvc_info to the resulting metric
+        // `namespace` so that we are able to match the two metrics.
+        // Finally it will filter out shared storage classes if they are configured
+        (
+          'min by (persistentvolumeclaim, namespace) (%s)'
+          + '*on(persistentvolumeclaim, namespace) group_left(storageclass) kube_persistentvolumeclaim_info{storageclass!~"%s"}'
+        ) % [ rule.expr, params.alerts.sharedStorageClass ]
+      else
+        rule.expr,
+  };
+
+
+local patchGeneralRules(rule) =
+  if rule.alert == 'Watchdog' then
+    rule {
+      labels: {
+        heartbeat: '60s',
+        severity: 'critical',
+      },
+      annotations+: {
+        description: 'This is a dead mans switch meant to ensure that the entire alerting pipeline is functional.',
+        summary: 'Alerting dead mans switch',
+      },
+    }
+  else
+    rule;
+
+local ruleAlter(group) =
+  if group.name == 'general.rules' then
+    group {
+      rules: std.map(patchGeneralRules, group.rules),
+    }
+  else if group.name == 'node-exporter' then
+    group {
+      rules: std.map(patchNodeFilesystemRules, group.rules),
+    }
+  else if group.name == 'kubernetes-storage' then
+    group {
+      rules: std.map(patchPersistentVolumeRules, group.rules),
+    }
+  else
+    group;
+
+
 local alterRules = {
   prometheusAlerts+:: {
     groups: std.map(
-      function(group)
-        if group.name == 'general.rules' then
-          group {
-            rules: std.map(
-              function(rule)
-                // Attach Signalilo/Icinga heartbeat labeling to Watchdog rule.
-                if rule.alert == 'Watchdog' then
-                  rule {
-                    labels: {
-                      heartbeat: '60s',
-                      severity: 'critical',
-                    },
-                    annotations+: {
-                      description: 'This is a dead mans switch meant to ensure that the entire alerting pipeline is functional.',
-                      summary: 'Alerting dead mans switch',
-                    },
-                  }
-                else
-                  rule,
-              group.rules
-            ),
-          }
-        else (
-          if group.name == 'node-exporter' then
-            group {
-              rules: std.map(patch_node_filesystem_rules, group.rules),
-            }
-          else
-            group
-        ),
+      ruleAlter,
       super.groups
     ),
   },
 };
 
+local annotateAlertRules(rule) =
+  // Only add custom annotations to alert rules, since recording
+  // rules cannot have annotations.
+  // We identify alert rules by the presence of the `alert` field.
+  if std.objectHas(rule, 'alert') then
+    local annotations =
+      defaultAnnotations +
+      if std.objectHas(customAnnotations, rule.alert) then
+        customAnnotations[rule.alert]
+      else
+        {};
+
+    rule {
+      annotations+: annotations,
+    }
+  else
+    rule;
+
+local ruleAnnotate(group) =
+  group {
+    rules: std.map(annotateAlertRules, group.rules),
+  };
+
 local annotateRules = {
   prometheusAlerts+:: {
     groups: std.map(
-      function(group)
-        group {
-          rules: std.map(
-            function(rule)
-              // Only add custom annotations to alert rules, since recording
-              // rules cannot have annotations.
-              // We identify alert rules by the presence of the `alert` field.
-              if std.objectHas(rule, 'alert') then
-                local annotations =
-                  defaultAnnotations +
-                  if std.objectHas(customAnnotations, rule.alert) then
-                    customAnnotations[rule.alert]
-                  else
-                    {};
-
-                rule {
-                  annotations+: annotations,
-                }
-              else
-                rule,
-            group.rules
-          ),
-        },
+      ruleAnnotate,
       super.groups
     ),
   },
@@ -155,6 +185,65 @@ local additionalRules = {
             },
             annotations: {
               message: '{{$labels.node}}: Memory usage more than 97% (current value is: {{ $value | humanizePercentage }})%',
+            },
+          },
+        ],
+      },
+      {
+        name: 'kubernetes-storage-class',
+        rules: [
+          {
+            alert: 'KubeStorageClassFillingUp',
+            // This will first calculate the persentage of available space for each PV mount and filter for all
+            // that have less then 3% of available storage.
+            // We then match the persistent volume usage with `kube_persistentvolumeclaim_info' which is always one. We
+            // do this by multiplying the two values.
+            // `*on(persistentvolumeclaim, namespace)` will mutliply the metrics and pvc_info that match on pvc-name and namespace
+            // `group_left(storageclass)` will add the storageclass label of the pvc_info to the resulting metric
+            // `namespace` so that we are able to match the two metrics.
+            // It will filter only shared storage classes and take the minimum (They should all have the same available space)
+            expr: (
+              'min by (storageclass)'
+              + '(kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes < 0.03'
+              + '*on(persistentvolumeclaim, namespace) group_left(storageclass) kube_persistentvolumeclaim_info{storageclass="%s"})'
+            ) % params.alerts.sharedStorageClass,
+            'for': '1m',
+            labels: {
+              severity: 'critical',
+            },
+            annotations: {
+              message: 'The storage class {{ $labels.storageclass }} is only {{ $value | humanizePercentage }} free.',
+              summary: 'StorageClass is filling up.',
+            },
+          },
+          {
+            alert: 'KubeStorageClassFillingUp',
+            // This will first calculate the persentage of available space for each PV mount and filter for all
+            // that have less then 15% of available storage. It will then predict the available space in four days
+            // and filter for all metrics that are expected to run out of space.
+            // We then match the persistent volume usage with `kube_persistentvolumeclaim_info' which is always one. We
+            // do this by multiplying the two values.
+            // `*on(persistentvolumeclaim, namespace)` will mutliply the metrics and pvc_info that match on pvc-name and namespace
+            // `group_left(storageclass)` will add the storageclass label of the pvc_info to the resulting metric
+            // `namespace` so that we are able to match the two metrics.
+            // It will filter only shared storage classes and take the minimum (They should all have the same available space)
+            expr: (
+              'min by (storageclass) ('
+              + '(kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes < 0.15'
+              + 'and'
+              + 'predict_linear(kubelet_volume_stats_available_bytes[6h], 4 * 24 * 3600) < 0)'
+              + '*on(persistentvolumeclaim, namespace) group_left(storageclass) kube_persistentvolumeclaim_info{storageclass="%s"})'
+            ) % params.alerts.sharedStorageClass,
+            'for': '1h',
+            labels: {
+              severity: 'warning',
+            },
+            annotations: {
+              message: (
+                'Based on recent sampling, the storage class {{ $labels.storageclass }} is expected to fill up'
+                + 'within four days. Currently {{ $value | humanizePercentage }} is available.'
+              ),
+              summary: 'StorageClass is filling up.',
             },
           },
         ],

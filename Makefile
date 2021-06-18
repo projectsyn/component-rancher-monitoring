@@ -5,6 +5,9 @@ SHELL := bash
 .DELETE_ON_ERROR:
 .SUFFIXES:
 
+
+COMPONENT_NAME ?= $(shell basename $(PWD)| sed s/component-//)
+
 DOCKER_CMD   ?= docker
 DOCKER_ARGS  ?= run --rm --user "$$(id -u)" -v "$${PWD}:/component" --workdir /component
 
@@ -24,6 +27,11 @@ VALE_ARGS ?= --minAlertLevel=error --config=/pages/ROOT/pages/.vale.ini /pages
 
 ANTORA_PREVIEW_CMD ?= $(DOCKER_CMD) run --rm --publish 2020:2020 --volume "${PWD}":/antora vshn/antora-preview:2.3.3 --style=syn --antora=docs
 
+COMMODORE_VERSION ?= "v0.7.0"
+COMMODORE_CMD     ?= $(DOCKER_CMD) run --rm --user "$$(id -u)" --volume "${PWD}:/app/$(COMPONENT_NAME)" --workdir /app/$(COMPONENT_NAME) projectsyn/commodore:$(COMMODORE_VERSION)
+
+
+
 .PHONY: all
 all: lint open
 
@@ -32,18 +40,18 @@ lint: lint_jsonnet lint_yaml docs-vale
 
 .PHONY: lint_jsonnet
 lint_jsonnet: $(JSONNET_FILES)
-	$(JSONNET_DOCKER) $(JSONNETFMT_ARGS) --test -- $?
+	@$(JSONNET_DOCKER) $(JSONNETFMT_ARGS) --test -- $?
 
 .PHONY: lint_yaml
 lint_yaml: $(YAML_FILES)
-	$(YAMLLINT_DOCKER) -f parsable -c $(YAMLLINT_CONFIG) $(YAMLLINT_ARGS) -- $?
+	@$(YAMLLINT_DOCKER) -f parsable -c $(YAMLLINT_CONFIG) $(YAMLLINT_ARGS) -- $?
 
 .PHONY: format
 format: format_jsonnet
 
 .PHONY: format_jsonnet
 format_jsonnet: $(JSONNET_FILES)
-	$(JSONNET_DOCKER) $(JSONNETFMT_ARGS) -- $?
+	@$(JSONNET_DOCKER) $(JSONNETFMT_ARGS) -- $?
 
 .PHONY: docs-serve
 docs-serve:
@@ -52,3 +60,14 @@ docs-serve:
 .PHONY: docs-vale
 docs-vale:
 	$(VALE_CMD) $(VALE_ARGS)
+
+.PHONY: compile
+compile: format lint
+	@echo Compiling..
+	@$(COMMODORE_CMD) component compile . -f tests/test.yml
+
+.PHONY: test
+test: compile
+	@echo
+	@echo
+	@cd tests && go test -count 1 ./...
