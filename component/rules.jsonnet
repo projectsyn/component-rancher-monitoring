@@ -255,6 +255,7 @@ local additionalRules = {
 local kp =
   (import 'kube-prometheus/kube-prometheus.libsonnet') +
   (import 'kube-prometheus/kube-prometheus-managed-cluster.libsonnet') +
+  (import 'kubernetes-mixin/alerts/add-runbook-links.libsonnet') +
   additionalRules +
   alterRules +
   annotateRules +
