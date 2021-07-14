@@ -32,7 +32,7 @@ local scrape_config = kube.Secret('additional-scrape-configs') {
         static_configs: [
           {
             targets: [
-              'access-prometheus.cattle-prometheus.svc.cluster.local:80',
+              params.federation_target,
             ],
           },
         ],
