@@ -18,26 +18,18 @@ default::
 +
 [source,yaml]
 ----
-'1.15': a95e9dada46ec6d8e11bd463b45b6e59525dc64e # release-0.3
-'1.16': eeb5ed7b62e45c540756eea76626d76a6ad725fc # release-0.4
-'1.17': eeb5ed7b62e45c540756eea76626d76a6ad725fc # release-0.4
-'1.18': 95ba62c1074c9e11bdb93423742552d5c816dfd1 # release-0.6
-'1.19': c1130442d68bf4bfbd1544711b67c98a28f2a327 # release-0.7
-'1.20': c1130442d68bf4bfbd1544711b67c98a28f2a327 # release-0.7
+'1.15': release-0.3
+'1.16': release-0.4
+'1.17': release-0.4
+'1.18': release-0.6
+'1.19': release-0.7
+'1.20': release-0.8
+'1.21': release-0.8
 ----
 
 Map of kube-prometheus versions which are compatible with different Kubernetes versions.
 
 See the https://github.com/prometheus-operator/kube-prometheus/blob/master/README.md#kubernetes-compatibility-matrix[kube-prometheus Kubernetes compatibility matrix] for updating this map.
-
-[NOTE]
-====
-So far, we've used Git commit hashes in the version map.
-The upstream compatibility matrix provides compatibility branches for Kubernetes 1.16+.
-Those branch names could be used as versions in jsonnet-bundler.
-
-To ensure minimal changes during the open sourcing process, we keep the old commit hash versions in the map for the initial open-source release.
-====
 
 == `cluster_kubernetes_version`
 
@@ -56,6 +48,29 @@ We're currently using this approach as a workaround for the fact that Commodore 
 Once dynamic facts are implemented, all clusters will have a uniformly named fact which represents the cluster's Kubernetes version.
 That fact can then be used in place of this parameter to select the `kube-prometheus` version in `jsonnetfile_parameters.kube_prometheus_version`.
 ====
+
+== `federation_target`
+
+[horizontal]
+type:: string
+default:: `${rancher_monitoring:_federation_target_map:${rancher_monitoring:rancher_monitoring_version}}`
+
+The service name of the Prometheus instance with which to federate.
+Usually this is the Prometheus instance managed by Rancher.
+
+By default, this parameter is set based on the value of parameter <<_rancher_monitoring_version,`rancher_monitoring_version`>>.
+The default configuration ensures that this parameter is set to the default service name for the Rancher-managed Prometheus instance for Rancher monitoring V1 or V2 depending on the value of `rancher_monitoring_version`.
+
+== `rancher_monitoring_version`
+
+[horizontal]
+type:: string
+default:: `v1`
+
+The version of the Rancher monitoring stack which is enabled on the cluster.
+Valid values are `v1` or `v2`.
+See https://rancher.com/docs/rancher/v2.5/en/monitoring-alerting/[the Rancher documentation] for more details on the differences between the V1 and V2 Rancher monitoring stacks.
+This parameter is used to configure an appropriate default value for the `federation_target` parameter, if that parameter isn't overwritten.
 
 == `jsonnetfile_parameters`
 
