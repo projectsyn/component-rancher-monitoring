@@ -204,8 +204,8 @@ local additionalRules = {
             // It will filter only shared storage classes and take the minimum (They should all have the same available space)
             expr: (
               'min by (storageclass)'
-              + '(kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes < 0.03'
-              + '*on(persistentvolumeclaim, namespace) group_left(storageclass) kube_persistentvolumeclaim_info{storageclass="%s"})'
+              + '((kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes) < 0.03)'
+              + '*on(persistentvolumeclaim, namespace) group_left(storageclass) kube_persistentvolumeclaim_info{storageclass="%s"}'
             ) % params.alerts.sharedStorageClass,
             'for': '1m',
             labels: {
@@ -229,10 +229,10 @@ local additionalRules = {
             // It will filter only shared storage classes and take the minimum (They should all have the same available space)
             expr: (
               'min by (storageclass) ('
-              + '(kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes < 0.15'
-              + 'and'
+              + '(kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes) < 0.15'
+              + ' and '
               + 'predict_linear(kubelet_volume_stats_available_bytes[6h], 4 * 24 * 3600) < 0)'
-              + '*on(persistentvolumeclaim, namespace) group_left(storageclass) kube_persistentvolumeclaim_info{storageclass="%s"})'
+              + '*on(persistentvolumeclaim, namespace) group_left(storageclass) kube_persistentvolumeclaim_info{storageclass="%s"}'
             ) % params.alerts.sharedStorageClass,
             'for': '1h',
             labels: {
