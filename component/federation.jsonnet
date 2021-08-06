@@ -22,7 +22,7 @@ local scrape_config = kube.Secret('additional-scrape-configs') {
         honor_timestamps: true,
         params: {
           'match[]': [
-            '{job!="ingress-nginx-controller-metrics",created_by_kind!="nginx-ingress-controller"}',
+            '{__name__=~"[^:]*",job!="ingress-nginx-controller-metrics",created_by_kind!="nginx-ingress-controller"}',
           ],
         },
         scrape_interval: federation_interval,
