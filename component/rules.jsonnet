@@ -252,7 +252,7 @@ local additionalRules = {
   },
 };
 
-local kp =
+local commonkp =
   (import 'kube-prometheus/kube-prometheus.libsonnet') +
   (import 'kube-prometheus/kube-prometheus-managed-cluster.libsonnet') +
   (import 'kubernetes-mixin/alerts/add-runbook-links.libsonnet') +
@@ -272,13 +272,24 @@ local kp =
         name: params.alertmanagerInstance,
       },
 
-      prometheusOperatorSelector: 'job="expose-operator-metrics",namespace="cattle-prometheus"',
-      kubeApiserverSelector: 'job="kubernetes"',
-      kubeStateMetricsSelector: 'job="expose-kubernetes-metrics"',
-      kubeletSelector: 'job="expose-kubelets-metrics"',
-      nodeExporterSelector: 'job="expose-node-metrics"',
       namespaceSelector: params.alerts.namespaceSelector,
     },
   };
+
+local kp =
+  commonkp +
+  if params.rancher_monitoring_version == 'v1' then
+    {
+      _config+:: {
+        prometheusOperatorSelector: 'job="expose-operator-metrics",namespace="cattle-prometheus"',
+        kubeApiserverSelector: 'job="kubernetes"',
+        kubeStateMetricsSelector: 'job="expose-kubernetes-metrics"',
+        kubeletSelector: 'job="expose-kubelets-metrics"',
+        nodeExporterSelector: 'job="expose-node-metrics"',
+      },
+    }
+  else
+    {
+    };
 
 kp.prometheus.rules
