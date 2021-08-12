@@ -252,14 +252,112 @@ local additionalRules = {
   },
 };
 
-local commonkp =
-  (import 'kube-prometheus/kube-prometheus.libsonnet') +
-  (import 'kube-prometheus/kube-prometheus-managed-cluster.libsonnet') +
+local common_mixins =
   (import 'kubernetes-mixin/alerts/add-runbook-links.libsonnet') +
-  additionalRules +
   alterRules +
   annotateRules +
-  filterRules +
+  filterRules;
+
+local common_config = {
+  prometheusRule+: {
+    metadata+: {
+      name: params.prometheusInstance + '-' + super.name,
+    },
+  },
+  _config+:: {
+    namespace: params.namespace,
+    mixin+: {
+      ruleLabels+: {
+        prometheus: params.prometheusInstance,
+      },
+    },
+  },
+  mixin+:: common_mixins,
+};
+
+
+// for rancher-monitoring prometheus > 0.7
+local kp2 =
+  (import 'kube-prometheus/main.libsonnet') +
+  (import 'kube-prometheus/addons/managed-cluster.libsonnet') +
+  {
+    kubeStateMetrics+:
+      common_config
+      {
+        mixin+:: {
+          _config+:: if params.rancher_monitoring_version == 'v1' then
+            {
+              kubeStateMetricsSelector: 'job="expose-kubernetes-metrics"',
+            }
+          else {},
+        },
+      },
+    nodeExporter+:
+      common_config
+      {
+        mixin+:: {
+          _config+:: if params.rancher_monitoring_version == 'v1' then
+            {
+              nodeExporterSelector: 'job="expose-node-metrics"',
+            }
+          else {},
+        },
+      },
+    prometheus+:
+      common_config
+      {
+        mixin+:: additionalRules,
+        prometheusRule+: {
+          metadata+: {
+            name: params.prometheusInstance + '-prometheus-rules',
+          },
+        },
+      },
+    prometheusOperator+:
+      common_config
+      {
+        mixin+:: {
+          _config+:: if params.rancher_monitoring_version == 'v1' then
+            {
+              prometheusOperatorSelector: 'job="expose-operator-metrics",namespace="cattle-prometheus"',
+            }
+          else {},
+        },
+      },
+    kubernetesControlPlane+:
+      common_config
+      {
+        mixin+:: {
+          _config+:: if params.rancher_monitoring_version == 'v1' then
+            {
+              kubeletSelector: 'job="expose-kubelets-metrics"',
+              kubeApiserverSelector: 'job="kubernetes"',
+              namespaceSelector: params.alerts.namespaceSelector,
+            }
+          else {},
+        },
+      },
+    kubePrometheus+: common_config,
+    alertmanager+:
+      common_config
+      {
+        prometheusRule+: {
+          metadata+: {
+            name: params.alertmanagerInstance + '-alertmanager-rules',
+          },
+        },
+        _config+:: {
+          name: params.alertmanagerInstance,
+        },
+      },
+  };
+
+// for rancher-monitoring prometheus <= 0.7
+local kp1 =
+  (import 'kube-prometheus/kube-prometheus.libsonnet') +
+  (import 'kube-prometheus/kube-prometheus-managed-cluster.libsonnet') +
+  additionalRules +
+  common_mixins +
   {
     _config+:: {
       namespace: params.namespace,
@@ -274,10 +372,7 @@ local commonkp =
 
       namespaceSelector: params.alerts.namespaceSelector,
     },
-  };
-
-local kp =
-  commonkp +
+  } +
   if params.rancher_monitoring_version == 'v1' then
     {
       _config+:: {
@@ -292,4 +387,24 @@ local kp =
     {
     };
 
-kp.prometheus.rules
+local kp1_versions =
+  [
+    'release-0.3',
+    'release-0.4',
+    'release-0.5',
+    'release-0.6',
+    'release-0.7',
+  ];
+
+if std.member(kp1_versions, params.jsonnetfile_parameters.kube_prometheus_version) then
+  kp1.prometheus.rules
+else
+  [
+    kp2.kubeStateMetrics.prometheusRule,
+    kp2.nodeExporter.prometheusRule,
+    kp2.prometheus.prometheusRule,
+    kp2.prometheusOperator.prometheusRule,
+    kp2.kubernetesControlPlane.prometheusRule,
+    kp2.kubePrometheus.prometheusRule,
+    kp2.alertmanager.prometheusRule,
+  ]
