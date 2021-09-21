@@ -36,8 +36,8 @@ local prometheus = {
   },
   spec: {
     externalLabels: {
-      tenant: inv.parameters.cluster.tenant,
-      cluster: inv.parameters.cluster.name,
+      tenant_id: inv.parameters.cluster.tenant,
+      cluster_id: inv.parameters.cluster.name,
     },
     alerting+: {
       alertmanagers+: [
