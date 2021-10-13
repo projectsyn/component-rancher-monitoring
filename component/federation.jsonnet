@@ -62,7 +62,7 @@ local scrape_config = kube.Secret('additional-scrape-configs') {
           {
             action: 'replace',
             regex: 'cattle-(prometheus|monitoring-system);(.*)',
-            replacement: '$1',
+            replacement: '$2',
             source_labels: [
               '__tmp_namespace',
               'exported_namespace',
