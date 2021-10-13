@@ -9,7 +9,7 @@ parameters:
       '1.18': release-0.6
       '1.19': release-0.7
       '1.20': release-0.8
-      '1.21': release-0.8
+      '1.21': release-0.9
       '1.22': release-0.9
     cluster_kubernetes_version: '1.18'
     jsonnetfile_parameters:
