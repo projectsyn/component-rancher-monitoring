@@ -21,7 +21,7 @@ local scrape_config = kube.Secret('additional-scrape-configs') {
         honor_labels: true,
         honor_timestamps: true,
         params: {
-          'match[]': [ std.format('{__name__=~"[^:]+",job="%s"}', job) for job in params.federation.jobs ],
+          'match[]': [ std.format('{__name__=~"[^:]+",job="%s",alertname=""}', job) for job in params.federation.jobs ],
         },
         scrape_interval: federation_interval,
         scrape_timeout: federation_scrape_timeout,
