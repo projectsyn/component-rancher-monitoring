@@ -58,10 +58,10 @@ local scrape_config = kube.Secret('additional-scrape-configs') {
           },
           // replace value of label namespace with value of label
           // exported_namespace if label namespace contained
-          // "cattle-prometheus".
+          // "cattle-prometheus or cattle-monitoring-system".
           {
             action: 'replace',
-            regex: 'cattle-prometheus;(.*)',
+            regex: 'cattle-(prometheus|monitoring-system);(.*)',
             replacement: '$1',
             source_labels: [
               '__tmp_namespace',
