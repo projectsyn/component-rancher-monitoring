@@ -63,9 +63,30 @@ parameters:
         group_interval: 5s
         repeat_interval: 10m
 
+    =_federation_job_map:
+      v1:
+        - expose-kubelets-metrics
+        - expose-kubernetes-metrics
+        - expose-node-metrics
+        - expose-prometheus-metrics
+        - kubernetes
+
+      v2:
+        - apiserver
+        - coredns
+        - kube-controller-manager
+        - kube-etcd
+        - kube-proxy
+        - kube-scheduler
+        - kube-state-metrics
+        - kubelet
+        - node-exporter
+        - rancher-monitoring-prometheus
+
     federation:
       interval: '10s'
       scrape_timeout: '10s'
+      jobs: ${rancher_monitoring:_federation_job_map:${rancher_monitoring:rancher_monitoring_version}}
 
     alerts:
       namespaceSelector: namespace=~"default|((kube|syn|cattle).*)"
