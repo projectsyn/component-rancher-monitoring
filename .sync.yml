@@ -1,7 +1,6 @@
 :global:
   componentName: rancher-monitoring
   githubUrl: https://github.com/projectsyn/component-rancher-monitoring
-  feature_goldenTests: true
 
 docs/antora.yml:
   name: rancher-monitoring
