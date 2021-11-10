@@ -21,9 +21,7 @@ local scrape_config = kube.Secret('additional-scrape-configs') {
         honor_labels: true,
         honor_timestamps: true,
         params: {
-          'match[]': [
-            '{__name__=~"[^:]*",job!="ingress-nginx-controller-metrics",created_by_kind!="nginx-ingress-controller"}',
-          ],
+          'match[]': [ std.format('{__name__=~"[^:]+",job="%s",alertname=""}', job) for job in params.federation.jobs ],
         },
         scrape_interval: federation_interval,
         scrape_timeout: federation_scrape_timeout,
