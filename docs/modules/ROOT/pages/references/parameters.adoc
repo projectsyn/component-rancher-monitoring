@@ -242,6 +242,28 @@ Example:
 sharedStorageClass: "bulk|foo.*"
 ----
 
+== `thanos`
+
+[horizontal]
+type:: dict
+default:: `{}`
+
+This parameter allows to configure the object storage for the Prometheus Thanos sidecar containers.
+If this dict doesn't have a key `type`, the Thanos sidecar container won't be deployed.
+See the https://thanos.io/tip/thanos/storage.md[Official documentation] for all possible configuration options.
+
+Example:
+
+[source,yaml]
+---
+thanos:
+  type: S3
+  config:
+    bucket: my-bucket
+    endpoint: my-s3.example.com
+    access_key: ?{vaultkv:${cluster:tenant}/${cluster:name}/thanos/access_key}
+    secret_key: ?{vaultkv:${cluster:tenant}/${cluster:name}/thanos/secret_key}
+---
 
 == Example
 
@@ -266,6 +288,14 @@ parameters:
         volumeClaimTemplate:
           spec:
             storageClassName: gp2
+      thanos:
+        resources:
+          requests:
+            memory: 2Gi
+            cpu: '1'
+          limits:
+            memory: 4Gi
+            cpu: '2'
 
     alertmanager:
       replicas: 3
@@ -290,4 +320,11 @@ parameters:
               namespace: '-dev$'
         # Use receiver configured above as default
         receiver: my-super-receiver
+    thanos:
+      type: S3
+      config:
+        bucket: my-bucket
+        endpoint: my-s3.example.com
+        access_key: ?{vaultkv:${cluster:tenant}/${cluster:name}/thanos/access_key}
+        secret_key: ?{vaultkv:${cluster:tenant}/${cluster:name}/thanos/secret_key}
 ----

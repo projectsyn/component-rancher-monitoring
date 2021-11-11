@@ -7,6 +7,7 @@ local namespace = params.namespace;
 
 local instance = params.prometheusInstance;
 local name = 'prometheus-' + instance;
+local configureThanos = std.objectHas(params.thanos, 'type');
 
 local labels = {
   'app.kubernetes.io/name': 'prometheus',
@@ -71,8 +72,25 @@ local prometheus = {
       name: 'additional-scrape-configs',
       key: 'prometheus-additional.yaml',
     },
-  } + com.makeMergeable(params.prometheus),
+  } + (if configureThanos then {
+         thanos+: {
+           image: params.images.thanos.image + ':' + params.images.thanos.tag,
+           version: std.split(params.images.thanos.tag, '@')[0],
+           objectStorageConfig+: {
+             name: name + '-thanos',
+             key: 'thanos.yaml',
+           },
+         },
+       }
+       else {}) + com.makeMergeable(params.prometheus),
 };
+
+local thanos_endpoint = if configureThanos then [
+  {
+    interval: '30s',
+    port: 'http',
+  },
+] else [];
 
 local servicemonitor = {
   apiVersion: 'monitoring.coreos.com/v1',
@@ -88,12 +106,25 @@ local servicemonitor = {
         interval: '30s',
         port: 'web',
       },
-    ],
+    ] + thanos_endpoint,
     selector: {
       matchLabels: labels,
     },
   },
 };
+
+local thanos_ports = if configureThanos then [
+  {
+    name: 'thanos-grpc',
+    port: 10901,
+    targetPort: 'grpc',
+  },
+  {
+    name: 'thanos-http',
+    port: 10902,
+    targetPort: 'http',
+  },
+] else [];
 
 local service = kube.Service(name) {
   metadata+: {
@@ -107,12 +138,13 @@ local service = kube.Service(name) {
         port: 9090,
         targetPort: 'web',
       },
-    ],
+    ] + thanos_ports,
     selector: {
       app: 'prometheus',
       prometheus: name,
     },
     sessionAffinity: 'ClientIP',
+    type: params.prometheusServiceType,
   },
 };
 
@@ -184,12 +216,23 @@ local clusterrolebinding = kube.ClusterRoleBinding(name) {
   ],
 };
 
+local thanos_objstore = if configureThanos then kube.Secret(name + '-thanos') {
+  metadata+: {
+    namespace: params.namespace,
+    labels+: labels,
+  },
+  stringData: {
+    'thanos.yaml': std.manifestYamlDoc(params.thanos),
+  },
+}
+;
 
-[
+std.filter(function(it) it != null, [
   serviceaccount,
   clusterrole,
   clusterrolebinding,
   prometheus,
   servicemonitor,
   service,
-]
+  thanos_objstore,
+])

@@ -21,6 +21,7 @@ parameters:
     rancher_monitoring_version: 'v1'
     federation_target: ${rancher_monitoring:_federation_target_map:${rancher_monitoring:rancher_monitoring_version}}
 
+    prometheusServiceType: ClusterIP
     prometheusInstance: platform
     prometheus:
       evaluationInterval: 5s
@@ -63,6 +64,8 @@ parameters:
         group_interval: 5s
         repeat_interval: 10m
 
+    thanos: {}
+
     =_federation_job_map:
       v1:
         - expose-kubelets-metrics
@@ -104,3 +107,6 @@ parameters:
       alertmanager:
         image: quay.io/prometheus/alertmanager
         tag: 'v0.18.0'
+      thanos:
+        image: quay.io/thanos/thanos'
+        tag: v0.18.0
