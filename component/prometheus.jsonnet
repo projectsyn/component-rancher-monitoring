@@ -20,11 +20,20 @@ local matchLabels = {
   role: 'alert-rules',
 };
 
-local nsSelector = {
+local defaultNsSelector = {
   matchLabels: {
     SYNMonitoring: 'main',
   },
 };
+
+local nsSelector =
+  if std.objectHas(params, 'prometheusNamespaceSelector') &&
+     params.prometheusNamespaceSelector != null
+  then
+    params.prometheusNamespaceSelector
+  else
+    defaultNsSelector;
+
 
 // The actual prometheus resource for the prometheus operator
 local prometheus = {

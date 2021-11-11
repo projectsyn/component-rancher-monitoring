@@ -96,6 +96,19 @@ default:: `platform`
 The Prometheus instance name to use.
 For some uses this will be prefixed with `prometheus`, for example for the StatefulSet name.
 
+== `prometheusNamespaceSelector`
+type:: string
+default:: null
+
+This parameters allows to set a custom namespace selector for fields `podMonitorNamespaceSelector`, `ruleNamespaceSelector` and `serviceMonitorNamespaceSelector`.
+If this parameter isn't set it will default to:
+[source,yaml]
+---
+matchLabels: {
+  SYNMonitoring: 'main',
+},
+---
+
 == `prometheus`
 
 [horizontal]
