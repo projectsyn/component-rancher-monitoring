@@ -271,7 +271,7 @@ thanos:
 type:: dict
 default:: `{}`
 
-A list of additional Prometheus rules to deploy on the cluster.
+This parameter allows users to configure additional Prometheus rules to deploy on the cluster.
 
 Each key-value pair in the dictionary is transformed into a `PrometheusRule` object by the component.
 
