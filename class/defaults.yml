@@ -110,3 +110,4 @@ parameters:
       thanos:
         image: quay.io/thanos/thanos'
         tag: v0.18.0
+    rules: {}
