@@ -9,6 +9,7 @@ local federation_interval = params.federation.interval;
 // "interval" and "scrape_timeout" are strings, so we can't do any meaningful
 // comparison/sanity checks without parsing them, which would be overkill.
 local federation_scrape_timeout = params.federation.scrape_timeout;
+local additional_scrape_configs = params.additionalScrapeConfigs;
 
 local scrape_config = kube.Secret('additional-scrape-configs') {
   metadata+: {
@@ -84,7 +85,7 @@ local scrape_config = kube.Secret('additional-scrape-configs') {
           },
         ],
       },
-    ]),
+    ] + additional_scrape_configs),
   },
 };
 

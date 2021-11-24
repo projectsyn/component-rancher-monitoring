@@ -23,6 +23,7 @@ parameters:
 
     prometheusServiceType: ClusterIP
     prometheusInstance: platform
+    additionalScrapeConfigs: []
     prometheus:
       evaluationInterval: 5s
       scrapeInterval: 10s
