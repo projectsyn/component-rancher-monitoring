@@ -103,7 +103,7 @@ parameters:
     images:
       prometheus:
         image: 'quay.io/prometheus/prometheus'
-        tag: 'v2.25.0@sha256:fd8b3c4c7ced91cbe96aa8a8dd4d02aa5aff7aefdaf0e579486127745c758c27'
+        tag: 'v2.33.0@sha256:3df0bcb08390d85c2b13d11801a2e53bdbdf3d2ddf8f8e5db740a279a7a85508'
       alertmanager:
         image: quay.io/prometheus/alertmanager
         tag: 'v0.18.0'
