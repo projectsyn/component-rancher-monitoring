@@ -1,0 +1,90 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Alertmanager
+metadata:
+  labels:
+    app.kubernetes.io/instance: platform
+    app.kubernetes.io/managed-by: syn
+    app.kubernetes.io/name: alertmanager
+  name: platform
+  namespace: syn-rancher-monitoring
+spec:
+  image: quay.io/prometheus/alertmanager:v0.18.0
+  logLevel: info
+  nodeSelector:
+    kubernetes.io/os: linux
+  replicas: 1
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccountName: alertmanager-platform
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations: {}
+  labels:
+    app.kubernetes.io/instance: platform
+    app.kubernetes.io/managed-by: syn
+    app.kubernetes.io/name: alertmanager
+    name: alertmanager-platform
+  name: alertmanager-platform
+  namespace: syn-rancher-monitoring
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: {}
+  labels:
+    app.kubernetes.io/instance: platform
+    app.kubernetes.io/managed-by: syn
+    app.kubernetes.io/name: alertmanager
+    name: alertmanager-platform
+  name: alertmanager-platform
+  namespace: syn-rancher-monitoring
+spec:
+  ports:
+    - name: web
+      port: 9093
+      targetPort: web
+  selector:
+    alertmanager: platform
+    app: alertmanager
+  sessionAffinity: ClientIP
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/instance: platform
+    app.kubernetes.io/managed-by: syn
+    app.kubernetes.io/name: alertmanager
+  name: alertmanager-platform
+  namespace: syn-rancher-monitoring
+spec:
+  endpoints:
+    - interval: 30s
+      port: web
+  selector:
+    matchLabels:
+      alertmanager: platform
+      app: alertmanager
+---
+apiVersion: v1
+data: {}
+kind: Secret
+metadata:
+  annotations: {}
+  labels:
+    app.kubernetes.io/instance: platform
+    app.kubernetes.io/managed-by: syn
+    app.kubernetes.io/name: alertmanager
+    name: alertmanager-platform
+  name: alertmanager-platform
+  namespace: syn-rancher-monitoring
+stringData:
+  alertmanager.yaml: "\"receivers\":\n- \"name\": \"devnull\"\n\"route\":\n  \"group_interval\"\
+    : \"5s\"\n  \"group_wait\": \"0s\"\n  \"receiver\": \"devnull\"\n  \"repeat_interval\"\
+    : \"10m\""
+type: Opaque
