@@ -252,8 +252,21 @@ local additionalRules = {
   },
 };
 
+local k8s_version =
+  local versionparts = std.split(params.cluster_kubernetes_version, '.');
+  assert std.length(versionparts) >= 2 : 'Unable to parse K8s version';
+  {
+    major: std.parseInt(versionparts[0]),
+    minor: std.parseInt(versionparts[1]),
+  };
+
 local common_mixins =
-  (import 'kubernetes-mixin/alerts/add-runbook-links.libsonnet') +
+  (
+    if k8s_version.minor <= 20 then
+      import 'kubernetes-mixin/alerts/add-runbook-links.libsonnet'
+    else
+      import 'kubernetes-mixin/lib/add-runbook-links.libsonnet'
+  ) +
   alterRules +
   annotateRules +
   filterRules;
