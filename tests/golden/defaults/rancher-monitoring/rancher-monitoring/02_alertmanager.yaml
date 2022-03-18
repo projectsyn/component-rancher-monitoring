@@ -8,7 +8,7 @@ metadata:
   name: platform
   namespace: syn-rancher-monitoring
 spec:
-  image: quay.io/prometheus/alertmanager:v0.18.0
+  image: quay.io/prometheus/alertmanager:v0.23.0
   logLevel: info
   nodeSelector:
     kubernetes.io/os: linux
