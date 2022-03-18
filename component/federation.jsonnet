@@ -9,6 +9,7 @@ local federation_interval = params.federation.interval;
 // "interval" and "scrape_timeout" are strings, so we can't do any meaningful
 // comparison/sanity checks without parsing them, which would be overkill.
 local federation_scrape_timeout = params.federation.scrape_timeout;
+local extra_metric_relabel_configs = params.federation.extra_metric_relabel_configs;
 
 local scrape_config = kube.Secret('additional-scrape-configs') {
   metadata+: {
@@ -82,7 +83,7 @@ local scrape_config = kube.Secret('additional-scrape-configs') {
             action: 'labeldrop',
             regex: '(__tmp|exported)_namespace',
           },
-        ],
+        ] + extra_metric_relabel_configs,
       },
     ]),
   },
