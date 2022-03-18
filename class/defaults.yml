@@ -90,6 +90,7 @@ parameters:
       interval: '10s'
       scrape_timeout: '10s'
       jobs: ${rancher_monitoring:_federation_job_map:${rancher_monitoring:rancher_monitoring_version}}
+      extra_metric_relabel_configs: []
 
     alerts:
       namespaceSelector: namespace=~"default|((kube|syn|cattle).*)"

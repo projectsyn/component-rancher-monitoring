@@ -189,11 +189,14 @@ default::
 ----
 interval: 10s
 scrape_timeout: 10s
+extra_metric_relabel_configs: []
 ----
 
 Configure the scrape interval and timeout for the Prometheus job which federates metrics from the Rancher Prometheus instance in `cattle-prometheus`.
 
 Users should ensure that the `scrape_timeout` is lower than the `interval`, as there's no validation logic in the component.
+
+`extra_metric_relabel_configs` allwos appending additional relabel configs to the federation job.
 
 
 == `alerts.namespaceSelector`
