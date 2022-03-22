@@ -2,6 +2,11 @@
   componentName: rancher-monitoring
   githubUrl: https://github.com/projectsyn/component-rancher-monitoring
   feature_goldenTests: true
+  testMatrix:
+    key: instance
+    entries:
+      - defaults
+      - kubernetes-1.21
 
 docs/antora.yml:
   name: rancher-monitoring
@@ -10,8 +15,3 @@ docs/antora.yml:
 .github/workflows/test.yaml:
   makeTarget: test -e instance=${{ matrix.instance }}
   goldenTest_makeTarget: golden-diff -e instance=${{ matrix.instance }}
-  matrix:
-    key: instance
-    entries:
-      - defaults
-      - kubernetes-1.21
