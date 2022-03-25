@@ -107,7 +107,7 @@ parameters:
         tag: 'v2.34.0@sha256:b37103e03399e90c9b7b1b2940894d3634915cf9df4aa2e5402bd85b4377808c'
       alertmanager:
         image: quay.io/prometheus/alertmanager
-        tag: 'v0.23.0'
+        tag: 'v0.24.0'
       thanos:
         image: quay.io/thanos/thanos'
         tag: v0.18.0
