@@ -14,8 +14,8 @@ local labels = {
 };
 
 local matchLabels = {
-  prometheus: instance,
-  role: 'alert-rules',
+  app: 'alertmanager',
+  alertmanager: instance,
 };
 
 local sa = kube.ServiceAccount(name) {
@@ -60,7 +60,7 @@ local service = kube.Service(name) {
         targetPort: 'web',
       },
     ],
-    selector: labels,
+    selector: matchLabels,
     sessionAffinity: 'ClientIP',
   },
 };
@@ -81,8 +81,7 @@ local servicemonitor = {
       },
     ],
     selector: {
-      app: 'alertmanager',
-      alertmanager: name,
+      matchLabels: labels,
     },
   },
 };
