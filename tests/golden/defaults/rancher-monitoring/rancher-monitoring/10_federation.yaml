@@ -20,14 +20,19 @@ stringData:
     :\n    - \"exported_namespace\"\n    - \"__tmp_namespace\"\n    \"target_label\"\
     : \"namespace\"\n  - \"action\": \"labeldrop\"\n    \"regex\": \"(__tmp|exported)_namespace\"\
     \n  \"metrics_path\": \"/federate\"\n  \"params\":\n    \"match[]\":\n    - \"\
-    {__name__=~\\\"[^:]+\\\",job=\\\"expose-kubelets-metrics\\\",alertname=\\\"\\\"\
-    }\"\n    - \"{__name__=~\\\"[^:]+\\\",job=\\\"expose-kubernetes-metrics\\\",alertname=\\\
-    \"\\\"}\"\n    - \"{__name__=~\\\"[^:]+\\\",job=\\\"expose-node-metrics\\\",alertname=\\\
-    \"\\\"}\"\n    - \"{__name__=~\\\"[^:]+\\\",job=\\\"expose-prometheus-metrics\\\
-    \",alertname=\\\"\\\"}\"\n    - \"{__name__=~\\\"[^:]+\\\",job=\\\"kubernetes\\\
+    {__name__=~\\\"[^:]+\\\",job=\\\"apiserver\\\",alertname=\\\"\\\"}\"\n    - \"\
+    {__name__=~\\\"[^:]+\\\",job=\\\"coredns\\\",alertname=\\\"\\\"}\"\n    - \"{__name__=~\\\
+    \"[^:]+\\\",job=\\\"kube-controller-manager\\\",alertname=\\\"\\\"}\"\n    - \"\
+    {__name__=~\\\"[^:]+\\\",job=\\\"kube-etcd\\\",alertname=\\\"\\\"}\"\n    - \"\
+    {__name__=~\\\"[^:]+\\\",job=\\\"kube-proxy\\\",alertname=\\\"\\\"}\"\n    - \"\
+    {__name__=~\\\"[^:]+\\\",job=\\\"kube-scheduler\\\",alertname=\\\"\\\"}\"\n  \
+    \  - \"{__name__=~\\\"[^:]+\\\",job=\\\"kube-state-metrics\\\",alertname=\\\"\\\
+    \"}\"\n    - \"{__name__=~\\\"[^:]+\\\",job=\\\"kubelet\\\",alertname=\\\"\\\"\
+    }\"\n    - \"{__name__=~\\\"[^:]+\\\",job=\\\"node-exporter\\\",alertname=\\\"\
+    \\\"}\"\n    - \"{__name__=~\\\"[^:]+\\\",job=\\\"rancher-monitoring-prometheus\\\
     \",alertname=\\\"\\\"}\"\n  \"scheme\": \"http\"\n  \"scrape_interval\": \"10s\"\
     \n  \"scrape_timeout\": \"10s\"\n  \"static_configs\":\n  - \"targets\":\n   \
-    \ - \"access-prometheus.cattle-prometheus.svc.cluster.local:80\""
+    \ - \"prometheus-operated.cattle-monitoring-system.svc.cluster.local:9090\""
 type: Opaque
 ---
 apiVersion: monitoring.coreos.com/v1
