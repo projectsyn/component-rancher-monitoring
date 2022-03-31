@@ -57,9 +57,8 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
-    app.kubernetes.io/instance: platform
-    app.kubernetes.io/managed-by: syn
-    app.kubernetes.io/name: alertmanager
+    prometheus: platform
+    role: alert-rules
   name: alertmanager-platform
   namespace: syn-rancher-monitoring
 spec:
@@ -68,8 +67,9 @@ spec:
       port: web
   selector:
     matchLabels:
-      alertmanager: platform
-      app: alertmanager
+      app.kubernetes.io/instance: platform
+      app.kubernetes.io/managed-by: syn
+      app.kubernetes.io/name: alertmanager
 ---
 apiVersion: v1
 data: {}
