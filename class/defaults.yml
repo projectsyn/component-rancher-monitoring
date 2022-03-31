@@ -18,7 +18,7 @@ parameters:
     =_federation_target_map:
       'v1': access-prometheus.cattle-prometheus.svc.cluster.local:80
       'v2': prometheus-operated.cattle-monitoring-system.svc.cluster.local:9090
-    rancher_monitoring_version: 'v1'
+    rancher_monitoring_version: 'v2'
     federation_target: ${rancher_monitoring:_federation_target_map:${rancher_monitoring:rancher_monitoring_version}}
 
     prometheusServiceType: ClusterIP

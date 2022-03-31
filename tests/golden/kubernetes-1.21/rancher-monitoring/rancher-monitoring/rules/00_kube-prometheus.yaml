@@ -22,9 +22,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatemetricslisterrors
             summary: kube-state-metrics is experiencing errors in list operations.
             syn_component: rancher-monitoring
-          expr: "(sum(rate(kube_state_metrics_list_total{job=\"expose-kubernetes-metrics\"\
+          expr: "(sum(rate(kube_state_metrics_list_total{job=\"kube-state-metrics\"\
             ,result=\"error\"}[5m]))\n  /\nsum(rate(kube_state_metrics_list_total{job=\"\
-            expose-kubernetes-metrics\"}[5m])))\n> 0.01\n"
+            kube-state-metrics\"}[5m])))\n> 0.01\n"
           for: 15m
           labels:
             severity: critical
@@ -36,9 +36,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatemetricswatcherrors
             summary: kube-state-metrics is experiencing errors in watch operations.
             syn_component: rancher-monitoring
-          expr: "(sum(rate(kube_state_metrics_watch_total{job=\"expose-kubernetes-metrics\"\
+          expr: "(sum(rate(kube_state_metrics_watch_total{job=\"kube-state-metrics\"\
             ,result=\"error\"}[5m]))\n  /\nsum(rate(kube_state_metrics_watch_total{job=\"\
-            expose-kubernetes-metrics\"}[5m])))\n> 0.01\n"
+            kube-state-metrics\"}[5m])))\n> 0.01\n"
           for: 15m
           labels:
             severity: critical
@@ -50,7 +50,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatemetricsshardingmismatch
             summary: kube-state-metrics sharding is misconfigured.
             syn_component: rancher-monitoring
-          expr: 'stdvar (kube_state_metrics_total_shards{job="expose-kubernetes-metrics"})
+          expr: 'stdvar (kube_state_metrics_total_shards{job="kube-state-metrics"})
             != 0
 
             '
@@ -64,9 +64,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatemetricsshardsmissing
             summary: kube-state-metrics shards are missing.
             syn_component: rancher-monitoring
-          expr: "2^max(kube_state_metrics_total_shards{job=\"expose-kubernetes-metrics\"\
+          expr: "2^max(kube_state_metrics_total_shards{job=\"kube-state-metrics\"\
             }) - 1\n  -\nsum( 2 ^ max by (shard_ordinal) (kube_state_metrics_shard_ordinal{job=\"\
-            expose-kubernetes-metrics\"}) )\n!= 0\n"
+            kube-state-metrics\"}) )\n!= 0\n"
           for: 15m
           labels:
             severity: critical
@@ -97,10 +97,10 @@ spec:
               hours.
             syn_component: rancher-monitoring
           expr: "bottomk by (device, host_ip) (1, (\n  node_filesystem_avail_bytes{job=\"\
-            expose-node-metrics\",fstype!=\"\"} / node_filesystem_size_bytes{job=\"\
-            expose-node-metrics\",fstype!=\"\"} * 100 < 40\nand\n  predict_linear(node_filesystem_avail_bytes{job=\"\
-            expose-node-metrics\",fstype!=\"\"}[6h], 24*60*60) < 0\nand\n  node_filesystem_readonly{job=\"\
-            expose-node-metrics\",fstype!=\"\"} == 0\n)\n)"
+            node-exporter\",fstype!=\"\"} / node_filesystem_size_bytes{job=\"node-exporter\"\
+            ,fstype!=\"\"} * 100 < 40\nand\n  predict_linear(node_filesystem_avail_bytes{job=\"\
+            node-exporter\",fstype!=\"\"}[6h], 24*60*60) < 0\nand\n  node_filesystem_readonly{job=\"\
+            node-exporter\",fstype!=\"\"} == 0\n)\n)"
           for: 1h
           labels:
             severity: warning
@@ -114,10 +114,10 @@ spec:
               hours.
             syn_component: rancher-monitoring
           expr: "bottomk by (device, host_ip) (1, (\n  node_filesystem_avail_bytes{job=\"\
-            expose-node-metrics\",fstype!=\"\"} / node_filesystem_size_bytes{job=\"\
-            expose-node-metrics\",fstype!=\"\"} * 100 < 15\nand\n  predict_linear(node_filesystem_avail_bytes{job=\"\
-            expose-node-metrics\",fstype!=\"\"}[6h], 4*60*60) < 0\nand\n  node_filesystem_readonly{job=\"\
-            expose-node-metrics\",fstype!=\"\"} == 0\n)\n)"
+            node-exporter\",fstype!=\"\"} / node_filesystem_size_bytes{job=\"node-exporter\"\
+            ,fstype!=\"\"} * 100 < 15\nand\n  predict_linear(node_filesystem_avail_bytes{job=\"\
+            node-exporter\",fstype!=\"\"}[6h], 4*60*60) < 0\nand\n  node_filesystem_readonly{job=\"\
+            node-exporter\",fstype!=\"\"} == 0\n)\n)"
           for: 1h
           labels:
             severity: critical
@@ -129,9 +129,9 @@ spec:
             summary: Filesystem has less than 5% space left.
             syn_component: rancher-monitoring
           expr: "bottomk by (device, host_ip) (1, (\n  node_filesystem_avail_bytes{job=\"\
-            expose-node-metrics\",fstype!=\"\"} / node_filesystem_size_bytes{job=\"\
-            expose-node-metrics\",fstype!=\"\"} * 100 < 5\nand\n  node_filesystem_readonly{job=\"\
-            expose-node-metrics\",fstype!=\"\"} == 0\n)\n)"
+            node-exporter\",fstype!=\"\"} / node_filesystem_size_bytes{job=\"node-exporter\"\
+            ,fstype!=\"\"} * 100 < 5\nand\n  node_filesystem_readonly{job=\"node-exporter\"\
+            ,fstype!=\"\"} == 0\n)\n)"
           for: 30m
           labels:
             severity: warning
@@ -143,9 +143,9 @@ spec:
             summary: Filesystem has less than 3% space left.
             syn_component: rancher-monitoring
           expr: "bottomk by (device, host_ip) (1, (\n  node_filesystem_avail_bytes{job=\"\
-            expose-node-metrics\",fstype!=\"\"} / node_filesystem_size_bytes{job=\"\
-            expose-node-metrics\",fstype!=\"\"} * 100 < 3\nand\n  node_filesystem_readonly{job=\"\
-            expose-node-metrics\",fstype!=\"\"} == 0\n)\n)"
+            node-exporter\",fstype!=\"\"} / node_filesystem_size_bytes{job=\"node-exporter\"\
+            ,fstype!=\"\"} * 100 < 3\nand\n  node_filesystem_readonly{job=\"node-exporter\"\
+            ,fstype!=\"\"} == 0\n)\n)"
           for: 30m
           labels:
             severity: critical
@@ -159,10 +159,10 @@ spec:
               24 hours.
             syn_component: rancher-monitoring
           expr: "bottomk by (device, host_ip) (1, (\n  node_filesystem_files_free{job=\"\
-            expose-node-metrics\",fstype!=\"\"} / node_filesystem_files{job=\"expose-node-metrics\"\
+            node-exporter\",fstype!=\"\"} / node_filesystem_files{job=\"node-exporter\"\
             ,fstype!=\"\"} * 100 < 40\nand\n  predict_linear(node_filesystem_files_free{job=\"\
-            expose-node-metrics\",fstype!=\"\"}[6h], 24*60*60) < 0\nand\n  node_filesystem_readonly{job=\"\
-            expose-node-metrics\",fstype!=\"\"} == 0\n)\n)"
+            node-exporter\",fstype!=\"\"}[6h], 24*60*60) < 0\nand\n  node_filesystem_readonly{job=\"\
+            node-exporter\",fstype!=\"\"} == 0\n)\n)"
           for: 1h
           labels:
             severity: warning
@@ -176,10 +176,10 @@ spec:
               4 hours.
             syn_component: rancher-monitoring
           expr: "bottomk by (device, host_ip) (1, (\n  node_filesystem_files_free{job=\"\
-            expose-node-metrics\",fstype!=\"\"} / node_filesystem_files{job=\"expose-node-metrics\"\
+            node-exporter\",fstype!=\"\"} / node_filesystem_files{job=\"node-exporter\"\
             ,fstype!=\"\"} * 100 < 20\nand\n  predict_linear(node_filesystem_files_free{job=\"\
-            expose-node-metrics\",fstype!=\"\"}[6h], 4*60*60) < 0\nand\n  node_filesystem_readonly{job=\"\
-            expose-node-metrics\",fstype!=\"\"} == 0\n)\n)"
+            node-exporter\",fstype!=\"\"}[6h], 4*60*60) < 0\nand\n  node_filesystem_readonly{job=\"\
+            node-exporter\",fstype!=\"\"} == 0\n)\n)"
           for: 1h
           labels:
             severity: critical
@@ -191,8 +191,8 @@ spec:
             summary: Filesystem has less than 5% inodes left.
             syn_component: rancher-monitoring
           expr: "bottomk by (device, host_ip) (1, (\n  node_filesystem_files_free{job=\"\
-            expose-node-metrics\",fstype!=\"\"} / node_filesystem_files{job=\"expose-node-metrics\"\
-            ,fstype!=\"\"} * 100 < 5\nand\n  node_filesystem_readonly{job=\"expose-node-metrics\"\
+            node-exporter\",fstype!=\"\"} / node_filesystem_files{job=\"node-exporter\"\
+            ,fstype!=\"\"} * 100 < 5\nand\n  node_filesystem_readonly{job=\"node-exporter\"\
             ,fstype!=\"\"} == 0\n)\n)"
           for: 1h
           labels:
@@ -205,8 +205,8 @@ spec:
             summary: Filesystem has less than 3% inodes left.
             syn_component: rancher-monitoring
           expr: "bottomk by (device, host_ip) (1, (\n  node_filesystem_files_free{job=\"\
-            expose-node-metrics\",fstype!=\"\"} / node_filesystem_files{job=\"expose-node-metrics\"\
-            ,fstype!=\"\"} * 100 < 3\nand\n  node_filesystem_readonly{job=\"expose-node-metrics\"\
+            node-exporter\",fstype!=\"\"} / node_filesystem_files{job=\"node-exporter\"\
+            ,fstype!=\"\"} * 100 < 3\nand\n  node_filesystem_readonly{job=\"node-exporter\"\
             ,fstype!=\"\"} == 0\n)\n)"
           for: 1h
           labels:
@@ -259,7 +259,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodetextfilecollectorscrapeerror
             summary: Node Exporter text file collector failed to scrape.
             syn_component: rancher-monitoring
-          expr: 'node_textfile_scrape_error{job="expose-node-metrics"} == 1
+          expr: 'node_textfile_scrape_error{job="node-exporter"} == 1
 
             '
           labels:
@@ -349,41 +349,41 @@ spec:
     - name: node-exporter.rules
       rules:
         - expr: "count without (cpu) (\n  count without (mode) (\n    node_cpu_seconds_total{job=\"\
-            expose-node-metrics\"}\n  )\n)\n"
+            node-exporter\"}\n  )\n)\n"
           record: instance:node_num_cpu:sum
         - expr: "1 - avg without (cpu, mode) (\n  rate(node_cpu_seconds_total{job=\"\
-            expose-node-metrics\", mode=\"idle\"}[5m])\n)\n"
+            node-exporter\", mode=\"idle\"}[5m])\n)\n"
           record: instance:node_cpu_utilisation:rate5m
-        - expr: "(\n  node_load1{job=\"expose-node-metrics\"}\n/\n  instance:node_num_cpu:sum{job=\"\
-            expose-node-metrics\"}\n)\n"
+        - expr: "(\n  node_load1{job=\"node-exporter\"}\n/\n  instance:node_num_cpu:sum{job=\"\
+            node-exporter\"}\n)\n"
           record: instance:node_load1_per_cpu:ratio
-        - expr: "1 - (\n  node_memory_MemAvailable_bytes{job=\"expose-node-metrics\"\
-            }\n/\n  node_memory_MemTotal_bytes{job=\"expose-node-metrics\"}\n)\n"
+        - expr: "1 - (\n  node_memory_MemAvailable_bytes{job=\"node-exporter\"}\n\
+            /\n  node_memory_MemTotal_bytes{job=\"node-exporter\"}\n)\n"
           record: instance:node_memory_utilisation:ratio
-        - expr: 'rate(node_vmstat_pgmajfault{job="expose-node-metrics"}[5m])
+        - expr: 'rate(node_vmstat_pgmajfault{job="node-exporter"}[5m])
 
             '
           record: instance:node_vmstat_pgmajfault:rate5m
-        - expr: 'rate(node_disk_io_time_seconds_total{job="expose-node-metrics", device=~"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+"}[5m])
+        - expr: 'rate(node_disk_io_time_seconds_total{job="node-exporter", device=~"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+"}[5m])
 
             '
           record: instance_device:node_disk_io_time_seconds:rate5m
-        - expr: 'rate(node_disk_io_time_weighted_seconds_total{job="expose-node-metrics",
+        - expr: 'rate(node_disk_io_time_weighted_seconds_total{job="node-exporter",
             device=~"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+"}[5m])
 
             '
           record: instance_device:node_disk_io_time_weighted_seconds:rate5m
         - expr: "sum without (device) (\n  rate(node_network_receive_bytes_total{job=\"\
-            expose-node-metrics\", device!=\"lo\"}[5m])\n)\n"
+            node-exporter\", device!=\"lo\"}[5m])\n)\n"
           record: instance:node_network_receive_bytes_excluding_lo:rate5m
         - expr: "sum without (device) (\n  rate(node_network_transmit_bytes_total{job=\"\
-            expose-node-metrics\", device!=\"lo\"}[5m])\n)\n"
+            node-exporter\", device!=\"lo\"}[5m])\n)\n"
           record: instance:node_network_transmit_bytes_excluding_lo:rate5m
         - expr: "sum without (device) (\n  rate(node_network_receive_drop_total{job=\"\
-            expose-node-metrics\", device!=\"lo\"}[5m])\n)\n"
+            node-exporter\", device!=\"lo\"}[5m])\n)\n"
           record: instance:node_network_receive_drop_excluding_lo:rate5m
         - expr: "sum without (device) (\n  rate(node_network_transmit_drop_total{job=\"\
-            expose-node-metrics\", device!=\"lo\"}[5m])\n)\n"
+            node-exporter\", device!=\"lo\"}[5m])\n)\n"
           record: instance:node_network_transmit_drop_excluding_lo:rate5m
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -766,8 +766,8 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatorlisterrors
             summary: Errors while performing list operations in controller.
             syn_component: rancher-monitoring
-          expr: '(sum by (controller,namespace) (rate(prometheus_operator_list_operations_failed_total{job="expose-operator-metrics",namespace="cattle-prometheus"}[10m]))
-            / sum by (controller,namespace) (rate(prometheus_operator_list_operations_total{job="expose-operator-metrics",namespace="cattle-prometheus"}[10m])))
+          expr: '(sum by (controller,namespace) (rate(prometheus_operator_list_operations_failed_total{job="prometheus-operator",namespace="syn-rancher-monitoring"}[10m]))
+            / sum by (controller,namespace) (rate(prometheus_operator_list_operations_total{job="prometheus-operator",namespace="syn-rancher-monitoring"}[10m])))
             > 0.4
 
             '
@@ -781,8 +781,8 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatorwatcherrors
             summary: Errors while performing watch operations in controller.
             syn_component: rancher-monitoring
-          expr: '(sum by (controller,namespace) (rate(prometheus_operator_watch_operations_failed_total{job="expose-operator-metrics",namespace="cattle-prometheus"}[10m]))
-            / sum by (controller,namespace) (rate(prometheus_operator_watch_operations_total{job="expose-operator-metrics",namespace="cattle-prometheus"}[10m])))
+          expr: '(sum by (controller,namespace) (rate(prometheus_operator_watch_operations_failed_total{job="prometheus-operator",namespace="syn-rancher-monitoring"}[10m]))
+            / sum by (controller,namespace) (rate(prometheus_operator_watch_operations_total{job="prometheus-operator",namespace="syn-rancher-monitoring"}[10m])))
             > 0.4
 
             '
@@ -796,7 +796,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatorsyncfailed
             summary: Last controller reconciliation failed
             syn_component: rancher-monitoring
-          expr: 'min_over_time(prometheus_operator_syncs{status="failed",job="expose-operator-metrics",namespace="cattle-prometheus"}[5m])
+          expr: 'min_over_time(prometheus_operator_syncs{status="failed",job="prometheus-operator",namespace="syn-rancher-monitoring"}[5m])
             > 0
 
             '
@@ -811,8 +811,8 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatorreconcileerrors
             summary: Errors while reconciling controller.
             syn_component: rancher-monitoring
-          expr: '(sum by (controller,namespace) (rate(prometheus_operator_reconcile_errors_total{job="expose-operator-metrics",namespace="cattle-prometheus"}[5m])))
-            / (sum by (controller,namespace) (rate(prometheus_operator_reconcile_operations_total{job="expose-operator-metrics",namespace="cattle-prometheus"}[5m])))
+          expr: '(sum by (controller,namespace) (rate(prometheus_operator_reconcile_errors_total{job="prometheus-operator",namespace="syn-rancher-monitoring"}[5m])))
+            / (sum by (controller,namespace) (rate(prometheus_operator_reconcile_operations_total{job="prometheus-operator",namespace="syn-rancher-monitoring"}[5m])))
             > 0.1
 
             '
@@ -826,7 +826,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatornodelookuperrors
             summary: Errors while reconciling Prometheus.
             syn_component: rancher-monitoring
-          expr: 'rate(prometheus_operator_node_address_lookup_errors_total{job="expose-operator-metrics",namespace="cattle-prometheus"}[5m])
+          expr: 'rate(prometheus_operator_node_address_lookup_errors_total{job="prometheus-operator",namespace="syn-rancher-monitoring"}[5m])
             > 0.1
 
             '
@@ -840,7 +840,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatornotready
             summary: Prometheus operator not ready
             syn_component: rancher-monitoring
-          expr: 'min by(namespace, controller) (max_over_time(prometheus_operator_ready{job="expose-operator-metrics",namespace="cattle-prometheus"}[5m])
+          expr: 'min by(namespace, controller) (max_over_time(prometheus_operator_ready{job="prometheus-operator",namespace="syn-rancher-monitoring"}[5m])
             == 0)
 
             '
@@ -855,7 +855,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatorrejectedresources
             summary: Resources rejected by Prometheus operator
             syn_component: rancher-monitoring
-          expr: 'min_over_time(prometheus_operator_managed_resources{state="rejected",job="expose-operator-metrics",namespace="cattle-prometheus"}[5m])
+          expr: 'min_over_time(prometheus_operator_managed_resources{state="rejected",job="prometheus-operator",namespace="syn-rancher-monitoring"}[5m])
             > 0
 
             '
@@ -885,8 +885,7 @@ spec:
             summary: Pod is crash looping.
             syn_component: rancher-monitoring
           expr: 'max_over_time(kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff",
-            namespace=~"default|((kube|syn|cattle).*)",job="kube-state-metrics"}[5m])
-            >= 1
+            job="kube-state-metrics"}[5m]) >= 1
 
             '
           for: 15m
@@ -899,11 +898,10 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepodnotready
             summary: Pod has been in a non-ready state for more than 15 minutes.
             syn_component: rancher-monitoring
-          expr: "sum by (namespace, pod) (\n  max by(namespace, pod) (\n    kube_pod_status_phase{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"kube-state-metrics\", phase=~\"\
-            Pending|Unknown\"}\n  ) * on(namespace, pod) group_left(owner_kind) topk\
-            \ by(namespace, pod) (\n    1, max by(namespace, pod, owner_kind) (kube_pod_owner{owner_kind!=\"\
-            Job\"})\n  )\n) > 0\n"
+          expr: "sum by (namespace, pod) (\n  max by(namespace, pod) (\n    kube_pod_status_phase{job=\"\
+            kube-state-metrics\", phase=~\"Pending|Unknown\"}\n  ) * on(namespace,\
+            \ pod) group_left(owner_kind) topk by(namespace, pod) (\n    1, max by(namespace,\
+            \ pod, owner_kind) (kube_pod_owner{owner_kind!=\"Job\"})\n  )\n) > 0\n"
           for: 15m
           labels:
             severity: warning
@@ -915,9 +913,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedeploymentgenerationmismatch
             summary: Deployment generation mismatch due to possible roll-back
             syn_component: rancher-monitoring
-          expr: "kube_deployment_status_observed_generation{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"kube-state-metrics\"}\n  !=\nkube_deployment_metadata_generation{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"kube-state-metrics\"}\n"
+          expr: "kube_deployment_status_observed_generation{job=\"kube-state-metrics\"\
+            }\n  !=\nkube_deployment_metadata_generation{job=\"kube-state-metrics\"\
+            }\n"
           for: 15m
           labels:
             severity: warning
@@ -929,11 +927,10 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedeploymentreplicasmismatch
             summary: Deployment has not matched the expected number of replicas.
             syn_component: rancher-monitoring
-          expr: "(\n  kube_deployment_spec_replicas{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"kube-state-metrics\"}\n    >\n  kube_deployment_status_replicas_available{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"kube-state-metrics\"}\n) and (\n\
-            \  changes(kube_deployment_status_replicas_updated{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"kube-state-metrics\"}[10m])\n    ==\n  0\n)\n"
+          expr: "(\n  kube_deployment_spec_replicas{job=\"kube-state-metrics\"}\n\
+            \    >\n  kube_deployment_status_replicas_available{job=\"kube-state-metrics\"\
+            }\n) and (\n  changes(kube_deployment_status_replicas_updated{job=\"kube-state-metrics\"\
+            }[10m])\n    ==\n  0\n)\n"
           for: 15m
           labels:
             severity: warning
@@ -945,11 +942,10 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatefulsetreplicasmismatch
             summary: Deployment has not matched the expected number of replicas.
             syn_component: rancher-monitoring
-          expr: "(\n  kube_statefulset_status_replicas_ready{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"kube-state-metrics\"}\n    !=\n  kube_statefulset_status_replicas{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"kube-state-metrics\"}\n) and (\n\
-            \  changes(kube_statefulset_status_replicas_updated{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"kube-state-metrics\"}[10m])\n    ==\n  0\n)\n"
+          expr: "(\n  kube_statefulset_status_replicas_ready{job=\"kube-state-metrics\"\
+            }\n    !=\n  kube_statefulset_status_replicas{job=\"kube-state-metrics\"\
+            }\n) and (\n  changes(kube_statefulset_status_replicas_updated{job=\"\
+            kube-state-metrics\"}[10m])\n    ==\n  0\n)\n"
           for: 15m
           labels:
             severity: warning
@@ -961,9 +957,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatefulsetgenerationmismatch
             summary: StatefulSet generation mismatch due to possible roll-back
             syn_component: rancher-monitoring
-          expr: "kube_statefulset_status_observed_generation{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"kube-state-metrics\"}\n  !=\nkube_statefulset_metadata_generation{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"kube-state-metrics\"}\n"
+          expr: "kube_statefulset_status_observed_generation{job=\"kube-state-metrics\"\
+            }\n  !=\nkube_statefulset_metadata_generation{job=\"kube-state-metrics\"\
+            }\n"
           for: 15m
           labels:
             severity: warning
@@ -974,15 +970,12 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatefulsetupdatenotrolledout
             summary: StatefulSet update has not been rolled out.
             syn_component: rancher-monitoring
-          expr: "(\n  max without (revision) (\n    kube_statefulset_status_current_revision{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"kube-state-metrics\"}\n      unless\n\
-            \    kube_statefulset_status_update_revision{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"kube-state-metrics\"}\n  )\n    *\n  (\n    kube_statefulset_replicas{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"kube-state-metrics\"}\n      !=\n\
-            \    kube_statefulset_status_replicas_updated{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"kube-state-metrics\"}\n  )\n)  and (\n  changes(kube_statefulset_status_replicas_updated{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"kube-state-metrics\"}[5m])\n   \
-            \ ==\n  0\n)\n"
+          expr: "(\n  max without (revision) (\n    kube_statefulset_status_current_revision{job=\"\
+            kube-state-metrics\"}\n      unless\n    kube_statefulset_status_update_revision{job=\"\
+            kube-state-metrics\"}\n  )\n    *\n  (\n    kube_statefulset_replicas{job=\"\
+            kube-state-metrics\"}\n      !=\n    kube_statefulset_status_replicas_updated{job=\"\
+            kube-state-metrics\"}\n  )\n)  and (\n  changes(kube_statefulset_status_replicas_updated{job=\"\
+            kube-state-metrics\"}[5m])\n    ==\n  0\n)\n"
           for: 15m
           labels:
             severity: warning
@@ -993,20 +986,15 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetrolloutstuck
             summary: DaemonSet rollout is stuck.
             syn_component: rancher-monitoring
-          expr: "(\n  (\n    kube_daemonset_status_current_number_scheduled{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"kube-state-metrics\"}\n     !=\n\
-            \    kube_daemonset_status_desired_number_scheduled{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"kube-state-metrics\"}\n  ) or (\n    kube_daemonset_status_number_misscheduled{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"kube-state-metrics\"}\n     !=\n\
-            \    0\n  ) or (\n    kube_daemonset_updated_number_scheduled{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"kube-state-metrics\"}\n     !=\n\
-            \    kube_daemonset_status_desired_number_scheduled{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"kube-state-metrics\"}\n  ) or (\n    kube_daemonset_status_number_available{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"kube-state-metrics\"}\n     !=\n\
-            \    kube_daemonset_status_desired_number_scheduled{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"kube-state-metrics\"}\n  )\n) and (\n  changes(kube_daemonset_updated_number_scheduled{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"kube-state-metrics\"}[5m])\n   \
-            \ ==\n  0\n)\n"
+          expr: "(\n  (\n    kube_daemonset_status_current_number_scheduled{job=\"\
+            kube-state-metrics\"}\n     !=\n    kube_daemonset_status_desired_number_scheduled{job=\"\
+            kube-state-metrics\"}\n  ) or (\n    kube_daemonset_status_number_misscheduled{job=\"\
+            kube-state-metrics\"}\n     !=\n    0\n  ) or (\n    kube_daemonset_updated_number_scheduled{job=\"\
+            kube-state-metrics\"}\n     !=\n    kube_daemonset_status_desired_number_scheduled{job=\"\
+            kube-state-metrics\"}\n  ) or (\n    kube_daemonset_status_number_available{job=\"\
+            kube-state-metrics\"}\n     !=\n    kube_daemonset_status_desired_number_scheduled{job=\"\
+            kube-state-metrics\"}\n  )\n) and (\n  changes(kube_daemonset_updated_number_scheduled{job=\"\
+            kube-state-metrics\"}[5m])\n    ==\n  0\n)\n"
           for: 15m
           labels:
             severity: warning
@@ -1017,7 +1005,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecontainerwaiting
             summary: Pod container waiting longer than 1 hour
             syn_component: rancher-monitoring
-          expr: 'sum by (namespace, pod, container) (kube_pod_container_status_waiting_reason{namespace=~"default|((kube|syn|cattle).*)",job="kube-state-metrics"})
+          expr: 'sum by (namespace, pod, container) (kube_pod_container_status_waiting_reason{job="kube-state-metrics"})
             > 0
 
             '
@@ -1031,9 +1019,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetnotscheduled
             summary: DaemonSet pods are not scheduled.
             syn_component: rancher-monitoring
-          expr: "kube_daemonset_status_desired_number_scheduled{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"kube-state-metrics\"}\n  -\nkube_daemonset_status_current_number_scheduled{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"kube-state-metrics\"} > 0\n"
+          expr: "kube_daemonset_status_desired_number_scheduled{job=\"kube-state-metrics\"\
+            }\n  -\nkube_daemonset_status_current_number_scheduled{job=\"kube-state-metrics\"\
+            } > 0\n"
           for: 10m
           labels:
             severity: warning
@@ -1044,7 +1032,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetmisscheduled
             summary: DaemonSet pods are misscheduled.
             syn_component: rancher-monitoring
-          expr: 'kube_daemonset_status_number_misscheduled{namespace=~"default|((kube|syn|cattle).*)",job="kube-state-metrics"}
+          expr: 'kube_daemonset_status_number_misscheduled{job="kube-state-metrics"}
             > 0
 
             '
@@ -1058,8 +1046,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobcompletion
             summary: Job did not complete in time
             syn_component: rancher-monitoring
-          expr: 'kube_job_spec_completions{namespace=~"default|((kube|syn|cattle).*)",job="kube-state-metrics"}
-            - kube_job_status_succeeded{namespace=~"default|((kube|syn|cattle).*)",job="kube-state-metrics"}  >
+          expr: 'kube_job_spec_completions{job="kube-state-metrics"} - kube_job_status_succeeded{job="kube-state-metrics"}  >
             0
 
             '
@@ -1074,8 +1061,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobfailed
             summary: Job failed to complete.
             syn_component: rancher-monitoring
-          expr: 'kube_job_failed{namespace=~"default|((kube|syn|cattle).*)",job="kube-state-metrics"}  >
-            0
+          expr: 'kube_job_failed{job="kube-state-metrics"}  > 0
 
             '
           for: 15m
@@ -1128,9 +1114,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecpuquotaovercommit
             summary: Cluster has overcommitted CPU resource requests.
             syn_component: rancher-monitoring
-          expr: "sum(kube_resourcequota{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"kube-state-metrics\", type=\"hard\", resource=\"cpu\"})\n  /\n\
-            sum(kube_node_status_allocatable{resource=\"cpu\"})\n  > 1.5\n"
+          expr: "sum(kube_resourcequota{job=\"kube-state-metrics\", type=\"hard\"\
+            , resource=\"cpu\"})\n  /\nsum(kube_node_status_allocatable{resource=\"\
+            cpu\"})\n  > 1.5\n"
           for: 5m
           labels:
             severity: warning
@@ -1140,10 +1126,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubememoryquotaovercommit
             summary: Cluster has overcommitted memory resource requests.
             syn_component: rancher-monitoring
-          expr: "sum(kube_resourcequota{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"kube-state-metrics\", type=\"hard\", resource=\"memory\"})\n  /\n\
-            sum(kube_node_status_allocatable{resource=\"memory\",job=\"kube-state-metrics\"\
-            })\n  > 1.5\n"
+          expr: "sum(kube_resourcequota{job=\"kube-state-metrics\", type=\"hard\"\
+            , resource=\"memory\"})\n  /\nsum(kube_node_status_allocatable{resource=\"\
+            memory\",job=\"kube-state-metrics\"})\n  > 1.5\n"
           for: 5m
           labels:
             severity: warning
@@ -1154,10 +1139,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubequotaalmostfull
             summary: Namespace quota is going to be full.
             syn_component: rancher-monitoring
-          expr: "kube_resourcequota{namespace=~\"default|((kube|syn|cattle).*)\",job=\"\
-            kube-state-metrics\", type=\"used\"}\n  / ignoring(instance, job, type)\n\
-            (kube_resourcequota{namespace=~\"default|((kube|syn|cattle).*)\",job=\"\
-            kube-state-metrics\", type=\"hard\"} > 0)\n  > 0.9 < 1\n"
+          expr: "kube_resourcequota{job=\"kube-state-metrics\", type=\"used\"}\n \
+            \ / ignoring(instance, job, type)\n(kube_resourcequota{job=\"kube-state-metrics\"\
+            , type=\"hard\"} > 0)\n  > 0.9 < 1\n"
           for: 15m
           labels:
             severity: info
@@ -1168,10 +1152,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubequotafullyused
             summary: Namespace quota is fully used.
             syn_component: rancher-monitoring
-          expr: "kube_resourcequota{namespace=~\"default|((kube|syn|cattle).*)\",job=\"\
-            kube-state-metrics\", type=\"used\"}\n  / ignoring(instance, job, type)\n\
-            (kube_resourcequota{namespace=~\"default|((kube|syn|cattle).*)\",job=\"\
-            kube-state-metrics\", type=\"hard\"} > 0)\n  == 1\n"
+          expr: "kube_resourcequota{job=\"kube-state-metrics\", type=\"used\"}\n \
+            \ / ignoring(instance, job, type)\n(kube_resourcequota{job=\"kube-state-metrics\"\
+            , type=\"hard\"} > 0)\n  == 1\n"
           for: 15m
           labels:
             severity: info
@@ -1182,10 +1165,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubequotaexceeded
             summary: Namespace quota has exceeded the limits.
             syn_component: rancher-monitoring
-          expr: "kube_resourcequota{namespace=~\"default|((kube|syn|cattle).*)\",job=\"\
-            kube-state-metrics\", type=\"used\"}\n  / ignoring(instance, job, type)\n\
-            (kube_resourcequota{namespace=~\"default|((kube|syn|cattle).*)\",job=\"\
-            kube-state-metrics\", type=\"hard\"} > 0)\n  > 1\n"
+          expr: "kube_resourcequota{job=\"kube-state-metrics\", type=\"used\"}\n \
+            \ / ignoring(instance, job, type)\n(kube_resourcequota{job=\"kube-state-metrics\"\
+            , type=\"hard\"} > 0)\n  > 1\n"
           for: 15m
           labels:
             severity: warning
@@ -1199,12 +1181,11 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumefillingup
             summary: PersistentVolume is filling up.
             syn_component: rancher-monitoring
-          expr: "min by (persistentvolumeclaim, namespace) ((\n  kubelet_volume_stats_available_bytes{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"expose-kubelets-metrics\"}\n   \
-            \ /\n  kubelet_volume_stats_capacity_bytes{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"expose-kubelets-metrics\"}\n) < 0.03\nand\nkubelet_volume_stats_used_bytes{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"expose-kubelets-metrics\"} > 0\n\
-            )*on(persistentvolumeclaim, namespace) group_left(storageclass) kube_persistentvolumeclaim_info{storageclass!~\"\
+          expr: "min by (persistentvolumeclaim, namespace) ((\n  kubelet_volume_stats_available_bytes{job=\"\
+            kubelet\", metrics_path=\"/metrics\"}\n    /\n  kubelet_volume_stats_capacity_bytes{job=\"\
+            kubelet\", metrics_path=\"/metrics\"}\n) < 0.03\nand\nkubelet_volume_stats_used_bytes{job=\"\
+            kubelet\", metrics_path=\"/metrics\"} > 0\n)*on(persistentvolumeclaim,\
+            \ namespace) group_left(storageclass) kube_persistentvolumeclaim_info{storageclass!~\"\
             \"}"
           for: 1m
           labels:
@@ -1218,15 +1199,13 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumefillingup
             summary: PersistentVolume is filling up.
             syn_component: rancher-monitoring
-          expr: "min by (persistentvolumeclaim, namespace) ((\n  kubelet_volume_stats_available_bytes{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"expose-kubelets-metrics\"}\n   \
-            \ /\n  kubelet_volume_stats_capacity_bytes{namespace=~\"default|((kube|syn|cattle).*)\"\
-            ,job=\"expose-kubelets-metrics\"}\n) < 0.15\nand\nkubelet_volume_stats_used_bytes{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"expose-kubelets-metrics\"} > 0\n\
-            and\npredict_linear(kubelet_volume_stats_available_bytes{namespace=~\"\
-            default|((kube|syn|cattle).*)\",job=\"expose-kubelets-metrics\"}[6h],\
-            \ 4 * 24 * 3600) < 0\n)*on(persistentvolumeclaim, namespace) group_left(storageclass)\
-            \ kube_persistentvolumeclaim_info{storageclass!~\"\"}"
+          expr: "min by (persistentvolumeclaim, namespace) ((\n  kubelet_volume_stats_available_bytes{job=\"\
+            kubelet\", metrics_path=\"/metrics\"}\n    /\n  kubelet_volume_stats_capacity_bytes{job=\"\
+            kubelet\", metrics_path=\"/metrics\"}\n) < 0.15\nand\nkubelet_volume_stats_used_bytes{job=\"\
+            kubelet\", metrics_path=\"/metrics\"} > 0\nand\npredict_linear(kubelet_volume_stats_available_bytes{job=\"\
+            kubelet\", metrics_path=\"/metrics\"}[6h], 4 * 24 * 3600) < 0\n)*on(persistentvolumeclaim,\
+            \ namespace) group_left(storageclass) kube_persistentvolumeclaim_info{storageclass!~\"\
+            \"}"
           for: 1h
           labels:
             severity: warning
@@ -1237,7 +1216,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumeerrors
             summary: PersistentVolume is having issues with provisioning.
             syn_component: rancher-monitoring
-          expr: 'kube_persistentvolume_status_phase{phase=~"Failed|Pending",namespace=~"default|((kube|syn|cattle).*)",job="kube-state-metrics"}
+          expr: 'kube_persistentvolume_status_phase{phase=~"Failed|Pending",job="kube-state-metrics"}
             > 0
 
             '
@@ -1356,8 +1335,8 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclientcertificateexpiration
             summary: Client certificate is about to expire.
             syn_component: rancher-monitoring
-          expr: 'apiserver_client_certificate_expiration_seconds_count{job="kubernetes"}
-            > 0 and on(job) histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="kubernetes"}[5m])))
+          expr: 'apiserver_client_certificate_expiration_seconds_count{job="apiserver"}
+            > 0 and on(job) histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m])))
             < 604800
 
             '
@@ -1370,8 +1349,8 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclientcertificateexpiration
             summary: Client certificate is about to expire.
             syn_component: rancher-monitoring
-          expr: 'apiserver_client_certificate_expiration_seconds_count{job="kubernetes"}
-            > 0 and on(job) histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="kubernetes"}[5m])))
+          expr: 'apiserver_client_certificate_expiration_seconds_count{job="apiserver"}
+            > 0 and on(job) histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m])))
             < 86400
 
             '
@@ -1397,7 +1376,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapidown
             summary: Target disappeared from Prometheus target discovery.
             syn_component: rancher-monitoring
-          expr: 'absent(up{job="kubernetes"} == 1)
+          expr: 'absent(up{job="apiserver"} == 1)
 
             '
           for: 15m
@@ -1411,8 +1390,8 @@ spec:
             summary: The apiserver has terminated {{ $value | humanizePercentage }}
               of its incoming requests.
             syn_component: rancher-monitoring
-          expr: 'sum(rate(apiserver_request_terminations_total{job="kubernetes"}[10m]))  /
-            (  sum(rate(apiserver_request_total{job="kubernetes"}[10m])) + sum(rate(apiserver_request_terminations_total{job="kubernetes"}[10m]))
+          expr: 'sum(rate(apiserver_request_terminations_total{job="apiserver"}[10m]))  /
+            (  sum(rate(apiserver_request_total{job="apiserver"}[10m])) + sum(rate(apiserver_request_terminations_total{job="apiserver"}[10m]))
             ) > 0.20
 
             '
@@ -1499,9 +1478,9 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeletpodstartuplatencyhigh
             summary: Kubelet Pod startup latency is too high.
             syn_component: rancher-monitoring
-          expr: 'histogram_quantile(0.99, sum(rate(kubelet_pod_worker_duration_seconds_bucket{job="expose-kubelets-metrics"}[5m]))
-            by (instance, le)) * on(instance) group_left(node) kubelet_node_name{job="expose-kubelets-metrics"}
-            > 60
+          expr: 'histogram_quantile(0.99, sum(rate(kubelet_pod_worker_duration_seconds_bucket{job="kubelet",
+            metrics_path="/metrics"}[5m])) by (instance, le)) * on(instance) group_left(node)
+            kubelet_node_name{job="kubelet", metrics_path="/metrics"} > 60
 
             '
           for: 15m
@@ -1588,7 +1567,7 @@ spec:
             runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeletdown
             summary: Target disappeared from Prometheus target discovery.
             syn_component: rancher-monitoring
-          expr: 'absent(up{job="expose-kubelets-metrics"} == 1)
+          expr: 'absent(up{job="kubelet", metrics_path="/metrics"} == 1)
 
             '
           for: 15m
@@ -1597,191 +1576,183 @@ spec:
     - name: kube-apiserver-burnrate.rules
       rules:
         - expr: "(\n  (\n    # too slow\n    sum by (cluster) (rate(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"LIST|GET\"}[1d]))\n    -\n    (\n      (\n      \
-            \  sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[1d]))\n\
+            apiserver\",verb=~\"LIST|GET\"}[1d]))\n    -\n    (\n      (\n       \
+            \ sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"\
+            apiserver\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[1d]))\n\
             \        or\n        vector(0)\n      )\n      +\n      sum by (cluster)\
-            \ (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\",verb=~\"\
+            \ (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\",verb=~\"\
             LIST|GET\",scope=\"namespace\",le=\"5\"}[1d]))\n      +\n      sum by\
-            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\"\
+            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\"\
             ,verb=~\"LIST|GET\",scope=\"cluster\",le=\"40\"}[1d]))\n    )\n  )\n \
             \ +\n  # errors\n  sum by (cluster) (rate(apiserver_request_total{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",code=~\"5..\"}[1d]))\n)\n/\nsum by (cluster)\
-            \ (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"LIST|GET\"\
-            }[1d]))\n"
+            apiserver\",verb=~\"LIST|GET\",code=~\"5..\"}[1d]))\n)\n/\nsum by (cluster)\
+            \ (rate(apiserver_request_total{job=\"apiserver\",verb=~\"LIST|GET\"}[1d]))\n"
           labels:
             verb: read
           record: apiserver_request:burnrate1d
         - expr: "(\n  (\n    # too slow\n    sum by (cluster) (rate(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"LIST|GET\"}[1h]))\n    -\n    (\n      (\n      \
-            \  sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[1h]))\n\
+            apiserver\",verb=~\"LIST|GET\"}[1h]))\n    -\n    (\n      (\n       \
+            \ sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"\
+            apiserver\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[1h]))\n\
             \        or\n        vector(0)\n      )\n      +\n      sum by (cluster)\
-            \ (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\",verb=~\"\
+            \ (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\",verb=~\"\
             LIST|GET\",scope=\"namespace\",le=\"5\"}[1h]))\n      +\n      sum by\
-            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\"\
+            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\"\
             ,verb=~\"LIST|GET\",scope=\"cluster\",le=\"40\"}[1h]))\n    )\n  )\n \
             \ +\n  # errors\n  sum by (cluster) (rate(apiserver_request_total{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",code=~\"5..\"}[1h]))\n)\n/\nsum by (cluster)\
-            \ (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"LIST|GET\"\
-            }[1h]))\n"
+            apiserver\",verb=~\"LIST|GET\",code=~\"5..\"}[1h]))\n)\n/\nsum by (cluster)\
+            \ (rate(apiserver_request_total{job=\"apiserver\",verb=~\"LIST|GET\"}[1h]))\n"
           labels:
             verb: read
           record: apiserver_request:burnrate1h
         - expr: "(\n  (\n    # too slow\n    sum by (cluster) (rate(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"LIST|GET\"}[2h]))\n    -\n    (\n      (\n      \
-            \  sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[2h]))\n\
+            apiserver\",verb=~\"LIST|GET\"}[2h]))\n    -\n    (\n      (\n       \
+            \ sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"\
+            apiserver\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[2h]))\n\
             \        or\n        vector(0)\n      )\n      +\n      sum by (cluster)\
-            \ (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\",verb=~\"\
+            \ (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\",verb=~\"\
             LIST|GET\",scope=\"namespace\",le=\"5\"}[2h]))\n      +\n      sum by\
-            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\"\
+            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\"\
             ,verb=~\"LIST|GET\",scope=\"cluster\",le=\"40\"}[2h]))\n    )\n  )\n \
             \ +\n  # errors\n  sum by (cluster) (rate(apiserver_request_total{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",code=~\"5..\"}[2h]))\n)\n/\nsum by (cluster)\
-            \ (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"LIST|GET\"\
-            }[2h]))\n"
+            apiserver\",verb=~\"LIST|GET\",code=~\"5..\"}[2h]))\n)\n/\nsum by (cluster)\
+            \ (rate(apiserver_request_total{job=\"apiserver\",verb=~\"LIST|GET\"}[2h]))\n"
           labels:
             verb: read
           record: apiserver_request:burnrate2h
         - expr: "(\n  (\n    # too slow\n    sum by (cluster) (rate(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"LIST|GET\"}[30m]))\n    -\n    (\n      (\n     \
-            \   sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[30m]))\n\
+            apiserver\",verb=~\"LIST|GET\"}[30m]))\n    -\n    (\n      (\n      \
+            \  sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"\
+            apiserver\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[30m]))\n\
             \        or\n        vector(0)\n      )\n      +\n      sum by (cluster)\
-            \ (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\",verb=~\"\
+            \ (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\",verb=~\"\
             LIST|GET\",scope=\"namespace\",le=\"5\"}[30m]))\n      +\n      sum by\
-            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\"\
+            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\"\
             ,verb=~\"LIST|GET\",scope=\"cluster\",le=\"40\"}[30m]))\n    )\n  )\n\
             \  +\n  # errors\n  sum by (cluster) (rate(apiserver_request_total{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",code=~\"5..\"}[30m]))\n)\n/\nsum by (cluster)\
-            \ (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"LIST|GET\"\
-            }[30m]))\n"
+            apiserver\",verb=~\"LIST|GET\",code=~\"5..\"}[30m]))\n)\n/\nsum by (cluster)\
+            \ (rate(apiserver_request_total{job=\"apiserver\",verb=~\"LIST|GET\"}[30m]))\n"
           labels:
             verb: read
           record: apiserver_request:burnrate30m
         - expr: "(\n  (\n    # too slow\n    sum by (cluster) (rate(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"LIST|GET\"}[3d]))\n    -\n    (\n      (\n      \
-            \  sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[3d]))\n\
+            apiserver\",verb=~\"LIST|GET\"}[3d]))\n    -\n    (\n      (\n       \
+            \ sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"\
+            apiserver\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[3d]))\n\
             \        or\n        vector(0)\n      )\n      +\n      sum by (cluster)\
-            \ (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\",verb=~\"\
+            \ (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\",verb=~\"\
             LIST|GET\",scope=\"namespace\",le=\"5\"}[3d]))\n      +\n      sum by\
-            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\"\
+            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\"\
             ,verb=~\"LIST|GET\",scope=\"cluster\",le=\"40\"}[3d]))\n    )\n  )\n \
             \ +\n  # errors\n  sum by (cluster) (rate(apiserver_request_total{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",code=~\"5..\"}[3d]))\n)\n/\nsum by (cluster)\
-            \ (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"LIST|GET\"\
-            }[3d]))\n"
+            apiserver\",verb=~\"LIST|GET\",code=~\"5..\"}[3d]))\n)\n/\nsum by (cluster)\
+            \ (rate(apiserver_request_total{job=\"apiserver\",verb=~\"LIST|GET\"}[3d]))\n"
           labels:
             verb: read
           record: apiserver_request:burnrate3d
         - expr: "(\n  (\n    # too slow\n    sum by (cluster) (rate(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"LIST|GET\"}[5m]))\n    -\n    (\n      (\n      \
-            \  sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[5m]))\n\
+            apiserver\",verb=~\"LIST|GET\"}[5m]))\n    -\n    (\n      (\n       \
+            \ sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"\
+            apiserver\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[5m]))\n\
             \        or\n        vector(0)\n      )\n      +\n      sum by (cluster)\
-            \ (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\",verb=~\"\
+            \ (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\",verb=~\"\
             LIST|GET\",scope=\"namespace\",le=\"5\"}[5m]))\n      +\n      sum by\
-            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\"\
+            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\"\
             ,verb=~\"LIST|GET\",scope=\"cluster\",le=\"40\"}[5m]))\n    )\n  )\n \
             \ +\n  # errors\n  sum by (cluster) (rate(apiserver_request_total{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",code=~\"5..\"}[5m]))\n)\n/\nsum by (cluster)\
-            \ (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"LIST|GET\"\
-            }[5m]))\n"
+            apiserver\",verb=~\"LIST|GET\",code=~\"5..\"}[5m]))\n)\n/\nsum by (cluster)\
+            \ (rate(apiserver_request_total{job=\"apiserver\",verb=~\"LIST|GET\"}[5m]))\n"
           labels:
             verb: read
           record: apiserver_request:burnrate5m
         - expr: "(\n  (\n    # too slow\n    sum by (cluster) (rate(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"LIST|GET\"}[6h]))\n    -\n    (\n      (\n      \
-            \  sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[6h]))\n\
+            apiserver\",verb=~\"LIST|GET\"}[6h]))\n    -\n    (\n      (\n       \
+            \ sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"\
+            apiserver\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[6h]))\n\
             \        or\n        vector(0)\n      )\n      +\n      sum by (cluster)\
-            \ (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\",verb=~\"\
+            \ (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\",verb=~\"\
             LIST|GET\",scope=\"namespace\",le=\"5\"}[6h]))\n      +\n      sum by\
-            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\"\
+            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\"\
             ,verb=~\"LIST|GET\",scope=\"cluster\",le=\"40\"}[6h]))\n    )\n  )\n \
             \ +\n  # errors\n  sum by (cluster) (rate(apiserver_request_total{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",code=~\"5..\"}[6h]))\n)\n/\nsum by (cluster)\
-            \ (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"LIST|GET\"\
-            }[6h]))\n"
+            apiserver\",verb=~\"LIST|GET\",code=~\"5..\"}[6h]))\n)\n/\nsum by (cluster)\
+            \ (rate(apiserver_request_total{job=\"apiserver\",verb=~\"LIST|GET\"}[6h]))\n"
           labels:
             verb: read
           record: apiserver_request:burnrate6h
         - expr: "(\n  (\n    # too slow\n    sum by (cluster) (rate(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"}[1d]))\n    -\n    sum by\
-            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\"\
+            apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"}[1d]))\n    -\n    sum by\
+            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\"\
             ,verb=~\"POST|PUT|PATCH|DELETE\",le=\"1\"}[1d]))\n  )\n  +\n  sum by (cluster)\
-            \ (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"\
+            \ (rate(apiserver_request_total{job=\"apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"\
             ,code=~\"5..\"}[1d]))\n)\n/\nsum by (cluster) (rate(apiserver_request_total{job=\"\
-            kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"}[1d]))\n"
+            apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"}[1d]))\n"
           labels:
             verb: write
           record: apiserver_request:burnrate1d
         - expr: "(\n  (\n    # too slow\n    sum by (cluster) (rate(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"}[1h]))\n    -\n    sum by\
-            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\"\
+            apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"}[1h]))\n    -\n    sum by\
+            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\"\
             ,verb=~\"POST|PUT|PATCH|DELETE\",le=\"1\"}[1h]))\n  )\n  +\n  sum by (cluster)\
-            \ (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"\
+            \ (rate(apiserver_request_total{job=\"apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"\
             ,code=~\"5..\"}[1h]))\n)\n/\nsum by (cluster) (rate(apiserver_request_total{job=\"\
-            kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"}[1h]))\n"
+            apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"}[1h]))\n"
           labels:
             verb: write
           record: apiserver_request:burnrate1h
         - expr: "(\n  (\n    # too slow\n    sum by (cluster) (rate(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"}[2h]))\n    -\n    sum by\
-            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\"\
+            apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"}[2h]))\n    -\n    sum by\
+            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\"\
             ,verb=~\"POST|PUT|PATCH|DELETE\",le=\"1\"}[2h]))\n  )\n  +\n  sum by (cluster)\
-            \ (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"\
+            \ (rate(apiserver_request_total{job=\"apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"\
             ,code=~\"5..\"}[2h]))\n)\n/\nsum by (cluster) (rate(apiserver_request_total{job=\"\
-            kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"}[2h]))\n"
+            apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"}[2h]))\n"
           labels:
             verb: write
           record: apiserver_request:burnrate2h
         - expr: "(\n  (\n    # too slow\n    sum by (cluster) (rate(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"}[30m]))\n    -\n    sum by\
-            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\"\
+            apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"}[30m]))\n    -\n    sum by\
+            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\"\
             ,verb=~\"POST|PUT|PATCH|DELETE\",le=\"1\"}[30m]))\n  )\n  +\n  sum by\
-            \ (cluster) (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"\
-            POST|PUT|PATCH|DELETE\",code=~\"5..\"}[30m]))\n)\n/\nsum by (cluster)\
-            \ (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"\
-            }[30m]))\n"
+            \ (cluster) (rate(apiserver_request_total{job=\"apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"\
+            ,code=~\"5..\"}[30m]))\n)\n/\nsum by (cluster) (rate(apiserver_request_total{job=\"\
+            apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"}[30m]))\n"
           labels:
             verb: write
           record: apiserver_request:burnrate30m
         - expr: "(\n  (\n    # too slow\n    sum by (cluster) (rate(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"}[3d]))\n    -\n    sum by\
-            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\"\
+            apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"}[3d]))\n    -\n    sum by\
+            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\"\
             ,verb=~\"POST|PUT|PATCH|DELETE\",le=\"1\"}[3d]))\n  )\n  +\n  sum by (cluster)\
-            \ (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"\
+            \ (rate(apiserver_request_total{job=\"apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"\
             ,code=~\"5..\"}[3d]))\n)\n/\nsum by (cluster) (rate(apiserver_request_total{job=\"\
-            kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"}[3d]))\n"
+            apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"}[3d]))\n"
           labels:
             verb: write
           record: apiserver_request:burnrate3d
         - expr: "(\n  (\n    # too slow\n    sum by (cluster) (rate(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"}[5m]))\n    -\n    sum by\
-            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\"\
+            apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"}[5m]))\n    -\n    sum by\
+            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\"\
             ,verb=~\"POST|PUT|PATCH|DELETE\",le=\"1\"}[5m]))\n  )\n  +\n  sum by (cluster)\
-            \ (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"\
+            \ (rate(apiserver_request_total{job=\"apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"\
             ,code=~\"5..\"}[5m]))\n)\n/\nsum by (cluster) (rate(apiserver_request_total{job=\"\
-            kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"}[5m]))\n"
+            apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"}[5m]))\n"
           labels:
             verb: write
           record: apiserver_request:burnrate5m
         - expr: "(\n  (\n    # too slow\n    sum by (cluster) (rate(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"}[6h]))\n    -\n    sum by\
-            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes\"\
+            apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"}[6h]))\n    -\n    sum by\
+            \ (cluster) (rate(apiserver_request_duration_seconds_bucket{job=\"apiserver\"\
             ,verb=~\"POST|PUT|PATCH|DELETE\",le=\"1\"}[6h]))\n  )\n  +\n  sum by (cluster)\
-            \ (rate(apiserver_request_total{job=\"kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"\
+            \ (rate(apiserver_request_total{job=\"apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"\
             ,code=~\"5..\"}[6h]))\n)\n/\nsum by (cluster) (rate(apiserver_request_total{job=\"\
-            kubernetes\",verb=~\"POST|PUT|PATCH|DELETE\"}[6h]))\n"
+            apiserver\",verb=~\"POST|PUT|PATCH|DELETE\"}[6h]))\n"
           labels:
             verb: write
           record: apiserver_request:burnrate6h
     - name: kube-apiserver-histogram.rules
       rules:
-        - expr: 'histogram_quantile(0.99, sum by (cluster, le, resource) (rate(apiserver_request_duration_seconds_bucket{job="kubernetes",verb=~"LIST|GET"}[5m])))
+        - expr: 'histogram_quantile(0.99, sum by (cluster, le, resource) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET"}[5m])))
             > 0
 
             '
@@ -1789,7 +1760,7 @@ spec:
             quantile: '0.99'
             verb: read
           record: cluster_quantile:apiserver_request_duration_seconds:histogram_quantile
-        - expr: 'histogram_quantile(0.99, sum by (cluster, le, resource) (rate(apiserver_request_duration_seconds_bucket{job="kubernetes",verb=~"POST|PUT|PATCH|DELETE"}[5m])))
+        - expr: 'histogram_quantile(0.99, sum by (cluster, le, resource) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[5m])))
             > 0
 
             '
@@ -1797,21 +1768,21 @@ spec:
             quantile: '0.99'
             verb: write
           record: cluster_quantile:apiserver_request_duration_seconds:histogram_quantile
-        - expr: 'histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{job="kubernetes",subresource!="log",verb!~"LIST|WATCH|WATCHLIST|DELETECOLLECTION|PROXY|CONNECT"}[5m]))
+        - expr: 'histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{job="apiserver",subresource!="log",verb!~"LIST|WATCH|WATCHLIST|DELETECOLLECTION|PROXY|CONNECT"}[5m]))
             without(instance, pod))
 
             '
           labels:
             quantile: '0.99'
           record: cluster_quantile:apiserver_request_duration_seconds:histogram_quantile
-        - expr: 'histogram_quantile(0.9, sum(rate(apiserver_request_duration_seconds_bucket{job="kubernetes",subresource!="log",verb!~"LIST|WATCH|WATCHLIST|DELETECOLLECTION|PROXY|CONNECT"}[5m]))
+        - expr: 'histogram_quantile(0.9, sum(rate(apiserver_request_duration_seconds_bucket{job="apiserver",subresource!="log",verb!~"LIST|WATCH|WATCHLIST|DELETECOLLECTION|PROXY|CONNECT"}[5m]))
             without(instance, pod))
 
             '
           labels:
             quantile: '0.9'
           record: cluster_quantile:apiserver_request_duration_seconds:histogram_quantile
-        - expr: 'histogram_quantile(0.5, sum(rate(apiserver_request_duration_seconds_bucket{job="kubernetes",subresource!="log",verb!~"LIST|WATCH|WATCHLIST|DELETECOLLECTION|PROXY|CONNECT"}[5m]))
+        - expr: 'histogram_quantile(0.5, sum(rate(apiserver_request_duration_seconds_bucket{job="apiserver",subresource!="log",verb!~"LIST|WATCH|WATCHLIST|DELETECOLLECTION|PROXY|CONNECT"}[5m]))
             without(instance, pod))
 
             '
@@ -1854,14 +1825,14 @@ spec:
             verb: all
           record: apiserver_request:availability30d
         - expr: "1 - (\n  sum by (cluster) (increase(apiserver_request_duration_seconds_count{job=\"\
-            kubernetes\",verb=~\"LIST|GET\"}[30d]))\n  -\n  (\n    # too slow\n  \
-            \  (\n      sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[30d]))\n\
+            apiserver\",verb=~\"LIST|GET\"}[30d]))\n  -\n  (\n    # too slow\n   \
+            \ (\n      sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{job=\"\
+            apiserver\",verb=~\"LIST|GET\",scope=~\"resource|\",le=\"1\"}[30d]))\n\
             \      or\n      vector(0)\n    )\n    +\n    sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",scope=\"namespace\",le=\"5\"}[30d]))\n\
+            apiserver\",verb=~\"LIST|GET\",scope=\"namespace\",le=\"5\"}[30d]))\n\
             \    +\n    sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{job=\"\
-            kubernetes\",verb=~\"LIST|GET\",scope=\"cluster\",le=\"40\"}[30d]))\n\
-            \  )\n  +\n  # errors\n  sum by (cluster) (code:apiserver_request_total:increase30d{verb=\"\
+            apiserver\",verb=~\"LIST|GET\",scope=\"cluster\",le=\"40\"}[30d]))\n \
+            \ )\n  +\n  # errors\n  sum by (cluster) (code:apiserver_request_total:increase30d{verb=\"\
             read\",code=~\"5..\"} or vector(0))\n)\n/\nsum by (cluster) (code:apiserver_request_total:increase30d{verb=\"\
             read\"})\n"
           labels:
@@ -1876,31 +1847,31 @@ spec:
           labels:
             verb: write
           record: apiserver_request:availability30d
-        - expr: 'sum by (cluster,code,resource) (rate(apiserver_request_total{job="kubernetes",verb=~"LIST|GET"}[5m]))
+        - expr: 'sum by (cluster,code,resource) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET"}[5m]))
 
             '
           labels:
             verb: read
           record: code_resource:apiserver_request_total:rate5m
-        - expr: 'sum by (cluster,code,resource) (rate(apiserver_request_total{job="kubernetes",verb=~"POST|PUT|PATCH|DELETE"}[5m]))
+        - expr: 'sum by (cluster,code,resource) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[5m]))
 
             '
           labels:
             verb: write
           record: code_resource:apiserver_request_total:rate5m
-        - expr: 'sum by (cluster, code, verb) (increase(apiserver_request_total{job="kubernetes",verb=~"LIST|GET|POST|PUT|PATCH|DELETE",code=~"2.."}[1h]))
+        - expr: 'sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb=~"LIST|GET|POST|PUT|PATCH|DELETE",code=~"2.."}[1h]))
 
             '
           record: code_verb:apiserver_request_total:increase1h
-        - expr: 'sum by (cluster, code, verb) (increase(apiserver_request_total{job="kubernetes",verb=~"LIST|GET|POST|PUT|PATCH|DELETE",code=~"3.."}[1h]))
+        - expr: 'sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb=~"LIST|GET|POST|PUT|PATCH|DELETE",code=~"3.."}[1h]))
 
             '
           record: code_verb:apiserver_request_total:increase1h
-        - expr: 'sum by (cluster, code, verb) (increase(apiserver_request_total{job="kubernetes",verb=~"LIST|GET|POST|PUT|PATCH|DELETE",code=~"4.."}[1h]))
+        - expr: 'sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb=~"LIST|GET|POST|PUT|PATCH|DELETE",code=~"4.."}[1h]))
 
             '
           record: code_verb:apiserver_request_total:increase1h
-        - expr: 'sum by (cluster, code, verb) (increase(apiserver_request_total{job="kubernetes",verb=~"LIST|GET|POST|PUT|PATCH|DELETE",code=~"5.."}[1h]))
+        - expr: 'sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb=~"LIST|GET|POST|PUT|PATCH|DELETE",code=~"5.."}[1h]))
 
             '
           record: code_verb:apiserver_request_total:increase1h
@@ -2082,21 +2053,24 @@ spec:
     - name: kubelet.rules
       rules:
         - expr: 'histogram_quantile(0.99, sum(rate(kubelet_pleg_relist_duration_seconds_bucket[5m]))
-            by (instance, le) * on(instance) group_left(node) kubelet_node_name{job="expose-kubelets-metrics"})
+            by (instance, le) * on(instance) group_left(node) kubelet_node_name{job="kubelet",
+            metrics_path="/metrics"})
 
             '
           labels:
             quantile: '0.99'
           record: node_quantile:kubelet_pleg_relist_duration_seconds:histogram_quantile
         - expr: 'histogram_quantile(0.9, sum(rate(kubelet_pleg_relist_duration_seconds_bucket[5m]))
-            by (instance, le) * on(instance) group_left(node) kubelet_node_name{job="expose-kubelets-metrics"})
+            by (instance, le) * on(instance) group_left(node) kubelet_node_name{job="kubelet",
+            metrics_path="/metrics"})
 
             '
           labels:
             quantile: '0.9'
           record: node_quantile:kubelet_pleg_relist_duration_seconds:histogram_quantile
         - expr: 'histogram_quantile(0.5, sum(rate(kubelet_pleg_relist_duration_seconds_bucket[5m]))
-            by (instance, le) * on(instance) group_left(node) kubelet_node_name{job="expose-kubelets-metrics"})
+            by (instance, le) * on(instance) group_left(node) kubelet_node_name{job="kubelet",
+            metrics_path="/metrics"})
 
             '
           labels:

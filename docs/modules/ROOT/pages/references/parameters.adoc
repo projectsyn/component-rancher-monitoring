@@ -65,7 +65,7 @@ The default configuration ensures that this parameter is set to the default serv
 
 [horizontal]
 type:: string
-default:: `v1`
+default:: `v2`
 
 The version of the Rancher monitoring stack which is enabled on the cluster.
 Valid values are `v1` or `v2`.
