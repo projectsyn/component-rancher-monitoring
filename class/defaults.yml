@@ -1,5 +1,8 @@
 parameters:
   rancher_monitoring:
+    =_metadata:
+      library_aliases:
+        prom.libsonnet: rancher-monitoring-prom.libsonnet
     namespace: syn-rancher-monitoring
 
     kube_prometheus_version:
