@@ -8,10 +8,6 @@
       - defaults
       - kubernetes-1.21
 
-docs/antora.yml:
-  name: rancher-monitoring
-  title: rancher-monitoring
-
 .github/workflows/test.yaml:
   makeTarget: test -e instance=${{ matrix.instance }}
   goldenTest_makeTarget: golden-diff -e instance=${{ matrix.instance }}
