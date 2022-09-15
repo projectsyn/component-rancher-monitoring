@@ -7,7 +7,7 @@
       "name": "rancher-monitoring",
       "slug": "rancher-monitoring",
       "parameter_key": "rancher_monitoring",
-      "test_cases": "defaults kubernetes-1.21 kubernetes-1.22",
+      "test_cases": "defaults kubernetes-1.21 kubernetes-1.22 kubernetes-1.23",
       "add_lib": "y",
       "add_pp": "n",
       "add_golden": "y",

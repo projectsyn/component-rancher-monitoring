@@ -35,6 +35,7 @@ jobs:
           - defaults
           - kubernetes-1.21
           - kubernetes-1.22
+          - kubernetes-1.23
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}
@@ -52,6 +53,7 @@ jobs:
           - defaults
           - kubernetes-1.21
           - kubernetes-1.22
+          - kubernetes-1.23
     defaults:
       run:
         working-directory: ${{ env.COMPONENT_NAME }}
