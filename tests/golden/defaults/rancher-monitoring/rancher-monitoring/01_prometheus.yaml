@@ -84,7 +84,7 @@ spec:
   externalLabels:
     cluster_id: c-green-test-1234
     tenant_id: t-silent-test-1234
-  image: quay.io/prometheus/prometheus:v2.34.0@sha256:b37103e03399e90c9b7b1b2940894d3634915cf9df4aa2e5402bd85b4377808c
+  image: quay.io/prometheus/prometheus:v2.38.0@sha256:aa1687dd552ed98df598cc0fed2effbc62a0f05236bc2253c65520ddd4f2afce
   nodeSelector:
     kubernetes.io/os: linux
   podMonitorNamespaceSelector:
@@ -126,7 +126,7 @@ spec:
           requests:
             storage: 10Gi
         storageClassName: fast
-  version: v2.34.0
+  version: v2.38.0
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
