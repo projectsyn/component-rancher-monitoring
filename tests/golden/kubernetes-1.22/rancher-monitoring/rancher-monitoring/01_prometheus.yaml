@@ -1,0 +1,169 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations: {}
+  labels:
+    app.kubernetes.io/instance: platform
+    app.kubernetes.io/managed-by: syn
+    app.kubernetes.io/name: prometheus
+    name: prometheus-platform
+  name: prometheus-platform
+  namespace: syn-rancher-monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations: {}
+  labels:
+    app.kubernetes.io/instance: platform
+    app.kubernetes.io/managed-by: syn
+    app.kubernetes.io/name: prometheus
+    name: prometheus-platform
+  name: prometheus-platform
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - nodes
+      - services
+      - endpoints
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ''
+    resources:
+      - configmaps
+    verbs:
+      - get
+  - nonResourceURLs:
+      - /metrics
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations: {}
+  labels:
+    app.kubernetes.io/instance: platform
+    app.kubernetes.io/managed-by: syn
+    app.kubernetes.io/name: prometheus
+    name: prometheus-platform
+  name: prometheus-platform
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus-platform
+subjects:
+  - kind: ServiceAccount
+    name: prometheus-platform
+    namespace: syn-rancher-monitoring
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  labels:
+    app.kubernetes.io/instance: platform
+    app.kubernetes.io/managed-by: syn
+    app.kubernetes.io/name: prometheus
+  name: prometheus-platform
+  namespace: syn-rancher-monitoring
+spec:
+  additionalScrapeConfigs:
+    key: prometheus-additional.yaml
+    name: additional-scrape-configs
+  alerting:
+    alertmanagers:
+      - name: alertmanager-platform
+        namespace: syn-rancher-monitoring
+        port: web
+  evaluationInterval: 5s
+  externalLabels:
+    cluster_id: c-green-test-1234
+    tenant_id: t-silent-test-1234
+  image: quay.io/prometheus/prometheus:v2.34.0@sha256:b37103e03399e90c9b7b1b2940894d3634915cf9df4aa2e5402bd85b4377808c
+  nodeSelector:
+    kubernetes.io/os: linux
+  podMonitorNamespaceSelector:
+    matchLabels:
+      SYNMonitoring: main
+  podMonitorSelector: {}
+  replicas: 1
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 6Gi
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+  retention: 24h
+  ruleNamespaceSelector:
+    matchLabels:
+      SYNMonitoring: main
+  ruleSelector:
+    matchLabels:
+      prometheus: platform
+      role: alert-rules
+  scrapeInterval: 10s
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccountName: prometheus-platform
+  serviceMonitorNamespaceSelector:
+    matchLabels:
+      SYNMonitoring: main
+  serviceMonitorSelector: {}
+  storage:
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: fast
+  version: v2.34.0
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    prometheus: platform
+    role: alert-rules
+  name: prometheus-platform
+  namespace: syn-rancher-monitoring
+spec:
+  endpoints:
+    - interval: 30s
+      port: web
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: platform
+      app.kubernetes.io/managed-by: syn
+      app.kubernetes.io/name: prometheus
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: {}
+  labels:
+    app.kubernetes.io/instance: platform
+    app.kubernetes.io/managed-by: syn
+    app.kubernetes.io/name: prometheus
+    name: prometheus-platform
+  name: prometheus-platform
+  namespace: syn-rancher-monitoring
+spec:
+  ports:
+    - name: web
+      port: 9090
+      targetPort: web
+  selector:
+    app: prometheus
+    prometheus: prometheus-platform
+  sessionAffinity: ClientIP
+  type: ClusterIP
