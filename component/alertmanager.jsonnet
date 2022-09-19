@@ -62,7 +62,7 @@ local service = kube.Service(name) {
     ],
     selector: {
       alertmanager: instance,
-      app: 'alertmanager',
+      'app.kubernetes.io/name': 'alertmanager',
     },
     sessionAffinity: 'ClientIP',
   },

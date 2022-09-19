@@ -1,0 +1,8 @@
+= Upgrade from 4.x to 5.x
+
+This guide describes the steps to perform an upgrade of the component from version 4.x to 5.x.
+
+[WARNING]
+====
+The 5.x version changes the selector for alertmanager. The new selector won't work for Kubernetes versions prior to 1.20 anymore.
+Therefore, before updating to version 5.x of this module, make sure to upgrade your cluster to at least 1.20.
