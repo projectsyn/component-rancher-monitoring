@@ -8,31 +8,54 @@ metadata:
   name: additional-scrape-configs
   namespace: syn-rancher-monitoring
 stringData:
-  prometheus-additional.yaml: "- \"honor_labels\": true\n  \"honor_timestamps\": true\n\
-    \  \"job_name\": \"access-prometheus\"\n  \"metric_relabel_configs\":\n  - \"\
-    action\": \"labeldrop\"\n    \"regex\": \"prometheus_replica\"\n  - \"action\"\
-    : \"replace\"\n    \"source_labels\":\n    - \"namespace\"\n    \"target_label\"\
-    : \"__tmp_namespace\"\n  - \"action\": \"labeldrop\"\n    \"regex\": \"namespace\"\
-    \n  - \"action\": \"replace\"\n    \"regex\": \"cattle-(prometheus|monitoring-system);(.*)\"\
-    \n    \"replacement\": \"$2\"\n    \"source_labels\":\n    - \"__tmp_namespace\"\
-    \n    - \"exported_namespace\"\n    \"target_label\": \"namespace\"\n  - \"action\"\
-    : \"replace\"\n    \"regex\": \";(.*)\"\n    \"replacement\": \"$1\"\n    \"source_labels\"\
-    :\n    - \"exported_namespace\"\n    - \"__tmp_namespace\"\n    \"target_label\"\
-    : \"namespace\"\n  - \"action\": \"labeldrop\"\n    \"regex\": \"(__tmp|exported)_namespace\"\
-    \n  \"metrics_path\": \"/federate\"\n  \"params\":\n    \"match[]\":\n    - \"\
-    {__name__=~\\\"[^:]+\\\",job=\\\"apiserver\\\",alertname=\\\"\\\"}\"\n    - \"\
-    {__name__=~\\\"[^:]+\\\",job=\\\"coredns\\\",alertname=\\\"\\\"}\"\n    - \"{__name__=~\\\
-    \"[^:]+\\\",job=\\\"kube-controller-manager\\\",alertname=\\\"\\\"}\"\n    - \"\
-    {__name__=~\\\"[^:]+\\\",job=\\\"kube-etcd\\\",alertname=\\\"\\\"}\"\n    - \"\
-    {__name__=~\\\"[^:]+\\\",job=\\\"kube-proxy\\\",alertname=\\\"\\\"}\"\n    - \"\
-    {__name__=~\\\"[^:]+\\\",job=\\\"kube-scheduler\\\",alertname=\\\"\\\"}\"\n  \
-    \  - \"{__name__=~\\\"[^:]+\\\",job=\\\"kube-state-metrics\\\",alertname=\\\"\\\
-    \"}\"\n    - \"{__name__=~\\\"[^:]+\\\",job=\\\"kubelet\\\",alertname=\\\"\\\"\
-    }\"\n    - \"{__name__=~\\\"[^:]+\\\",job=\\\"node-exporter\\\",alertname=\\\"\
-    \\\"}\"\n    - \"{__name__=~\\\"[^:]+\\\",job=\\\"rancher-monitoring-prometheus\\\
-    \",alertname=\\\"\\\"}\"\n  \"scheme\": \"http\"\n  \"scrape_interval\": \"10s\"\
-    \n  \"scrape_timeout\": \"10s\"\n  \"static_configs\":\n  - \"targets\":\n   \
-    \ - \"prometheus-operated.cattle-monitoring-system.svc.cluster.local:9090\""
+  prometheus-additional.yaml: |-
+    - "honor_labels": true
+      "honor_timestamps": true
+      "job_name": "access-prometheus"
+      "metric_relabel_configs":
+      - "action": "labeldrop"
+        "regex": "prometheus_replica"
+      - "action": "replace"
+        "source_labels":
+        - "namespace"
+        "target_label": "__tmp_namespace"
+      - "action": "labeldrop"
+        "regex": "namespace"
+      - "action": "replace"
+        "regex": "cattle-(prometheus|monitoring-system);(.*)"
+        "replacement": "$2"
+        "source_labels":
+        - "__tmp_namespace"
+        - "exported_namespace"
+        "target_label": "namespace"
+      - "action": "replace"
+        "regex": ";(.*)"
+        "replacement": "$1"
+        "source_labels":
+        - "exported_namespace"
+        - "__tmp_namespace"
+        "target_label": "namespace"
+      - "action": "labeldrop"
+        "regex": "(__tmp|exported)_namespace"
+      "metrics_path": "/federate"
+      "params":
+        "match[]":
+        - "{__name__=~\"[^:]+\",job=\"apiserver\",alertname=\"\"}"
+        - "{__name__=~\"[^:]+\",job=\"coredns\",alertname=\"\"}"
+        - "{__name__=~\"[^:]+\",job=\"kube-controller-manager\",alertname=\"\"}"
+        - "{__name__=~\"[^:]+\",job=\"kube-etcd\",alertname=\"\"}"
+        - "{__name__=~\"[^:]+\",job=\"kube-proxy\",alertname=\"\"}"
+        - "{__name__=~\"[^:]+\",job=\"kube-scheduler\",alertname=\"\"}"
+        - "{__name__=~\"[^:]+\",job=\"kube-state-metrics\",alertname=\"\"}"
+        - "{__name__=~\"[^:]+\",job=\"kubelet\",alertname=\"\"}"
+        - "{__name__=~\"[^:]+\",job=\"node-exporter\",alertname=\"\"}"
+        - "{__name__=~\"[^:]+\",job=\"rancher-monitoring-prometheus\",alertname=\"\"}"
+      "scheme": "http"
+      "scrape_interval": "10s"
+      "scrape_timeout": "10s"
+      "static_configs":
+      - "targets":
+        - "prometheus-operated.cattle-monitoring-system.svc.cluster.local:9090"
 type: Opaque
 ---
 apiVersion: monitoring.coreos.com/v1
