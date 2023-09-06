@@ -1,5 +1,0 @@
-parameters:
-  _instance: rancher-monitoring
-  rancher_monitoring:
-    alerts:
-      sharedStorageClass: "bluk|foo.*"
