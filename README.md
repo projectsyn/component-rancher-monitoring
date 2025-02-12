@@ -1,3 +1,8 @@
+# ⚠️  Repo Archive Notice
+
+As of Feb 12, 2025, this component will no longer be updated.
+If you're looking for a component to manage a Prometheus stack on a Rancher cluster, please consider [component-prometheus](https://github.com/projectsyn/component-prometheus).
+
 # Commodore Component: rancher-monitoring
 
 This is a [Commodore][commodore] Component for rancher-monitoring.

@@ -4,6 +4,8 @@ parameters:
       library_aliases:
         prom.libsonnet: rancher-monitoring-prom.libsonnet
       multi_tenant: true
+      deprecated: true
+      deprecation_notice: Consider using component-prometheus (https://github.com/projectsyn/component-prometheus.git).
     namespace: syn-rancher-monitoring
 
     kube_prometheus_version:
